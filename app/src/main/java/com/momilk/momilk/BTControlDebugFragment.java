@@ -8,9 +8,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 /**
- * Created by Vasiliy on 11/6/2014.
+ * This fragment is used in a debug configuration in order to control bluetooth
  */
-public class HomeFragment extends Fragment {
+public class BTControlDebugFragment extends Fragment {
 
 
     @Override

@@ -14,7 +14,6 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v4.app.FragmentTransaction;
@@ -28,9 +27,13 @@ import android.widget.Toast;
 import java.util.HashMap;
 
 
-public class Main extends FragmentActivity
-        implements DevicesListFragment.onBluetoothDeviceSelectedListener,
-        TabHost.OnTabChangeListener {
+public class Main extends FragmentActivity implements TabHost.OnTabChangeListener {
+
+    // Set this to true in order to load a very simple layout for debug of bluetooth connection
+    private static final boolean BT_DEBUG_LAYOUT = false;
+
+    private static final String LOG_TAG = "MainActivity";
+
 
     public static final String HOME_TAB_TAG = "home";
     public static final String HISTORY_TAB_TAG = "history";
@@ -127,8 +130,8 @@ public class Main extends FragmentActivity
 //                    String readMessage = new String(readBuf, 0, msg.arg1);
 
                     String readMessage = (String) msg.obj;
-                    Log.i("MainActivity/mHandler", "Received message: " + readMessage);
-                    CommunicationFragment f = getCommunicationFragment();
+                    Log.i(LOG_TAG, "Received message: " + readMessage);
+                    BTCommDebugFragment f = getCommunicationFragment();
                     f.receivedNewMessage(readMessage);
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
@@ -152,7 +155,7 @@ public class Main extends FragmentActivity
             String action = intent.getAction();
             // When discovery finds a device
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                Log.i("MainActivity.mReceiver", "onReceive is called!");
+                Log.i(LOG_TAG, "onReceive is called!");
 
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
@@ -160,7 +163,7 @@ public class Main extends FragmentActivity
                 // Add the name and address to an array adapter to show in a ListView
 
 
-                DevicesListFragment devicesListFragment = getDevicesListFragment();
+                BTDevicesDebugFragment devicesListFragment = getDevicesListFragment();
                 devicesListFragment.add(device, deviceClass);
 
             }
@@ -240,30 +243,39 @@ public class Main extends FragmentActivity
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
         TabInfo tabInfo = null;
-        Main.addTab(this, mTabHost,
-                mTabHost.newTabSpec(HOME_TAB_TAG).setIndicator(getString(R.string.home_tab_indicator)),
-                (tabInfo = new TabInfo(HOME_TAB_TAG, HomeFragment.class, args)));
-        mMapTabInfo.put(tabInfo.mTag, tabInfo);
-
-        // This tab is used for debug
-        Main.addTab(this, mTabHost,
-                mTabHost.newTabSpec("comm").setIndicator("Comm"),
-                (tabInfo = new TabInfo("comm", CommunicationFragment.class, args)));
-        mMapTabInfo.put(tabInfo.mTag, tabInfo);
 
 
-//        Main.addTab(this, mTabHost,
-//                mTabHost.newTabSpec(HISTORY_TAB_TAG).setIndicator(getString(R.string.history_tab_indicator)),
-//                ( tabInfo = new TabInfo(HISTORY_TAB_TAG, HistoryFragment.class, args)));
-//        mMapTabInfo.put(tabInfo.mTag, tabInfo);
-//        Main.addTab(this, mTabHost,
-//                mTabHost.newTabSpec(SETTINGS_TAB_TAG).setIndicator(getString(R.string.history_tab_indicator)),
-//                ( tabInfo = new TabInfo(SETTINGS_TAB_TAG, SettingsFragment.class, args)));
-//        mMapTabInfo.put(tabInfo.mTag, tabInfo);
-//        Main.addTab(this, mTabHost,
-//                mTabHost.newTabSpec(EXTRAS_TAB_TAG).setIndicator(getString(R.string.history_tab_indicator)),
-//                ( tabInfo = new TabInfo(EXTRAS_TAB_TAG, ExtrasFragment.class, args)));
-//        mMapTabInfo.put(tabInfo.mTag, tabInfo);
+        if (BT_DEBUG_LAYOUT) {
+            // This tab is used for BT debug
+            Main.addTab(this, mTabHost,
+                    mTabHost.newTabSpec(HOME_TAB_TAG).setIndicator(getString(R.string.home_tab_indicator)),
+                    (tabInfo = new TabInfo(HOME_TAB_TAG, BTControlDebugFragment.class, args)));
+            mMapTabInfo.put(tabInfo.mTag, tabInfo);
+
+            // This tab is used for BT debug
+            Main.addTab(this, mTabHost,
+                    mTabHost.newTabSpec("comm").setIndicator("Comm"),
+                    (tabInfo = new TabInfo("comm", BTCommDebugFragment.class, args)));
+            mMapTabInfo.put(tabInfo.mTag, tabInfo);
+        } else {
+
+            Main.addTab(this, mTabHost,
+                    mTabHost.newTabSpec(HOME_TAB_TAG).setIndicator(getString(R.string.home_tab_indicator)),
+                    (tabInfo = new TabInfo(HOME_TAB_TAG, HomeFragment.class, args)));
+            mMapTabInfo.put(tabInfo.mTag, tabInfo);
+            Main.addTab(this, mTabHost,
+                    mTabHost.newTabSpec(HISTORY_TAB_TAG).setIndicator(getString(R.string.history_tab_indicator)),
+                    (tabInfo = new TabInfo(HISTORY_TAB_TAG, HistoryFragment.class, args)));
+            mMapTabInfo.put(tabInfo.mTag, tabInfo);
+            Main.addTab(this, mTabHost,
+                    mTabHost.newTabSpec(SETTINGS_TAB_TAG).setIndicator(getString(R.string.history_tab_indicator)),
+                    (tabInfo = new TabInfo(SETTINGS_TAB_TAG, SettingsFragment.class, args)));
+            mMapTabInfo.put(tabInfo.mTag, tabInfo);
+            Main.addTab(this, mTabHost,
+                    mTabHost.newTabSpec(EXTRAS_TAB_TAG).setIndicator(getString(R.string.history_tab_indicator)),
+                    (tabInfo = new TabInfo(EXTRAS_TAB_TAG, ExtrasFragment.class, args)));
+            mMapTabInfo.put(tabInfo.mTag, tabInfo);
+        }
 
         // Default to home tab
         this.onTabChanged(HOME_TAB_TAG);
@@ -287,6 +299,7 @@ public class Main extends FragmentActivity
             activity.getSupportFragmentManager().executePendingTransactions();
         }
 
+        // Each tab contains FragmentContainer
         tabHost.addTab(tabSpec, FragmentContainer.class, null);
     }
 
@@ -302,11 +315,11 @@ public class Main extends FragmentActivity
             }
             if (newTab != null) {
                 if (newTab.mFragmentContainer == null) {
-                    Log.i("MainActivity", "creating new FragmentContainer for " + newTab.mClass.getSimpleName());
+                    Log.i(LOG_TAG, "creating new FragmentContainer for " + newTab.mClass.getSimpleName());
                     newTab.mFragmentContainer = FragmentContainer.newInstance(newTab.mClass.getName());
                     ft.add(android.R.id.tabcontent, newTab.mFragmentContainer, newTab.mTag);
                 } else {
-                    Log.i("MainActivity", "attaching existing FragmentContainer for " + newTab.mClass.getSimpleName());
+                    Log.i(LOG_TAG, "attaching existing FragmentContainer for " + newTab.mClass.getSimpleName());
                     ft.attach(newTab.mFragmentContainer);
                 }
             }
@@ -320,7 +333,7 @@ public class Main extends FragmentActivity
         if (newTab != null) {
             newTab.mFragmentContainer.setDefaultContent(null);
         } else {
-            Log.e("Main/onTabChanged", "newTab is null!");
+            Log.e(LOG_TAG, "newTab is null!");
         }
 
     }
@@ -370,9 +383,8 @@ public class Main extends FragmentActivity
         mChatService.start();
     }
 
-    @Override
     public void deviceSelected(final BluetoothDevice device) {
-        Log.i("MainActivity", "deviceSelected is called on device: " + device.getName());
+        Log.i(LOG_TAG, "deviceSelected is called on device: " + device.getName());
 
 
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -407,9 +419,9 @@ public class Main extends FragmentActivity
 
     public void discoverDevices() {
 
-        Log.i("MainActivity", "discoverDevices is called!");
+        Log.i(LOG_TAG, "discoverDevices is called!");
 
-        DevicesListFragment devicesListFragment = getDevicesListFragment();
+        getDevicesListFragment();
 
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "Your device does not support bluetooth",
@@ -471,11 +483,11 @@ public class Main extends FragmentActivity
                 mChatService.write(message + "\n");
             }
         } catch (NullPointerException e) {
-            Log.e("MainActivity/sendMessage", "NullPointer");
+            Log.e(LOG_TAG, "NullPointer");
         }
     }
 
-    private DevicesListFragment getDevicesListFragment() {
+    private BTDevicesDebugFragment getDevicesListFragment() {
 
         mTabHost.setCurrentTabByTag(HOME_TAB_TAG);
 
@@ -483,13 +495,13 @@ public class Main extends FragmentActivity
                 (FragmentContainer) getSupportFragmentManager().findFragmentById(android.R.id.tabcontent);
 
         if (fc == null) {
-            Log.e("MainActivity", "FragmentContainer for the current tab is null");
+            Log.e(LOG_TAG, "FragmentContainer for the current tab is null");
         }
-        return (DevicesListFragment) fc.replaceContent(DevicesListFragment.class, null);
+        return (BTDevicesDebugFragment) fc.replaceContent(BTDevicesDebugFragment.class, null);
     }
 
 
-    private CommunicationFragment getCommunicationFragment() {
+    private BTCommDebugFragment getCommunicationFragment() {
 
         mTabHost.setCurrentTabByTag("comm");
 
@@ -497,9 +509,9 @@ public class Main extends FragmentActivity
                 (FragmentContainer) getSupportFragmentManager().findFragmentById(android.R.id.tabcontent);
 
         if (fc == null) {
-            Log.e("MainActivity", "FragmentContainer for the current tab is null");
+            Log.e(LOG_TAG, "FragmentContainer for the current tab is null");
         }
-        return (CommunicationFragment) fc.replaceContent(CommunicationFragment.class, null);
+        return (BTCommDebugFragment) fc.replaceContent(BTCommDebugFragment.class, null);
 
 
 

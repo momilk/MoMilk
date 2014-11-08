@@ -22,7 +22,10 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 
-public class DevicesListFragment extends ListFragment {
+public class BTDevicesDebugFragment extends ListFragment {
+
+
+    private static final String LOG_TAG = "BTDevicesDebugFragment";
 
     private MyCustomAdapter mAdapter;
     private onBluetoothDeviceSelectedListener mCallback;
@@ -59,7 +62,7 @@ public class DevicesListFragment extends ListFragment {
 
     public void add( BluetoothDevice device, BluetoothClass deviceClass) {
 
-        Log.i("DevicesListFragment", "adding a new device:" + device.getName());
+        Log.i(LOG_TAG, "adding a new device:" + device.getName());
 
         mAdapter.add(device);
         mAdapter.notifyDataSetChanged();

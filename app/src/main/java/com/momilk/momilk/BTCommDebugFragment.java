@@ -11,7 +11,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
-public class CommunicationFragment extends Fragment{
+public class BTCommDebugFragment extends Fragment{
+
+
+    private static final String LOG_TAG = "BTDevicesDebugFragment";
 
     private ArrayAdapter<String> mAdapter = null;
     private EditText mSendMsgEdt;
@@ -44,7 +47,7 @@ public class CommunicationFragment extends Fragment{
 
     public void receivedNewMessage (String msg) {
         if (mAdapter == null ) {
-            Log.e("CommunicationFragment", "mAdapter is null!");
+            Log.e(LOG_TAG, "mAdapter is null!");
         }
         mAdapter.add(msg);
         mAdapter.notifyDataSetChanged();
