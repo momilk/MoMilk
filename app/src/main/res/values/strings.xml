@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">MoMilk</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="show_devices_btn">Discover devices</string>
+    <string name="listen_for_connection_btn">Listen for connection</string>
+    <string name="send_msg_btn">Send</string>
+    <string name="send_msg_hint">Enter your message</string>
+    <string name="received_msg_txt">Received messages:</string>
+    <string name="home_tab_indicator">Home</string>
+    <string name="history_tab_indicator">History</string>
+
+</resources>
