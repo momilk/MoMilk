@@ -29,14 +29,11 @@ public class DevicesListFragment extends ListFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.e("DevicesListFragment", "onCreate is called");
         super.onCreate(savedInstanceState);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        Log.e("DevicesListFragment", "onCreateView is called");
 
         mAdapter = new MyCustomAdapter(getActivity(),
                 android.R.layout.simple_list_item_1);

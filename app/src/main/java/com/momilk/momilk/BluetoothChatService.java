@@ -1,7 +1,9 @@
 package com.momilk.momilk;
 
+        import java.io.BufferedReader;
         import java.io.IOException;
         import java.io.InputStream;
+        import java.io.InputStreamReader;
         import java.io.OutputStream;
         import java.util.UUID;
 
@@ -197,10 +199,10 @@ public class BluetoothChatService {
 
     /**
      * Write to the ConnectedThread in an unsynchronized manner
-     * @param out The bytes to write
-     * @see ConnectedThread#write(byte[])
+     * @param message The message to write
+     * @see ConnectedThread#write(String)
      */
-    public void write(byte[] out) {
+    public void write(String message) {
         // Create temporary object
         ConnectedThread r;
         // Synchronize a copy of the ConnectedThread
@@ -209,7 +211,7 @@ public class BluetoothChatService {
             r = mConnectedThread;
         }
         // Perform the write unsynchronized
-        r.write(out);
+        r.write(message);
     }
 
     /**
@@ -413,23 +415,27 @@ public class BluetoothChatService {
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
+        private final BufferedReader mmBufferedReader;
 
         public ConnectedThread(BluetoothSocket socket, String socketType) {
             Log.d(TAG, "create ConnectedThread: " + socketType);
             mmSocket = socket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
+            BufferedReader tmpBuff = null;
 
             // Get the BluetoothSocket input and output streams
             try {
                 tmpIn = socket.getInputStream();
                 tmpOut = socket.getOutputStream();
+                tmpBuff = new BufferedReader(new InputStreamReader(tmpIn));
             } catch (IOException e) {
                 Log.e(TAG, "temp sockets not created", e);
             }
 
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
+            mmBufferedReader = tmpBuff;
         }
 
         public void run() {
@@ -437,15 +443,26 @@ public class BluetoothChatService {
             byte[] buffer = new byte[1024];
             int bytes;
 
+            String line;
+
             // Keep listening to the InputStream while connected
             while (true) {
                 try {
-                    // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
+//                    // Read from the InputStream
+//                    bytes = mmInStream.read(buffer);
+//
+//                    // Send the obtained bytes to the UI Activity
+//                    mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
+//                            .sendToTarget();
 
+
+                    if (mmBufferedReader.ready() && (line = mmBufferedReader.readLine()) != null) {
                     // Send the obtained bytes to the UI Activity
-                    mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
+                    mHandler.obtainMessage(Constants.MESSAGE_READ, -1, -1, line)
                             .sendToTarget();
+
+                    }
+
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
                     connectionLost();
@@ -458,14 +475,14 @@ public class BluetoothChatService {
 
         /**
          * Write to the connected OutStream.
-         * @param buffer  The bytes to write
+         * @param message The message to write
          */
-        public void write(byte[] buffer) {
+        public void write(String message) {
             try {
-                mmOutStream.write(buffer);
+                mmOutStream.write(message.getBytes());
 
-                // Share the sent message back to the UI Activity
-                mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, buffer)
+                //Share the sent message back to the UI Activity
+                mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, message)
                         .sendToTarget();
             } catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);

@@ -39,8 +39,6 @@ public class Main extends FragmentActivity
 
     private BluetoothAdapter mBluetoothAdapter = null;
 
-    private StringBuffer mOutStringBuffer = null;
-
     private BluetoothChatService mChatService = null;
 
     private FragmentTabHost mTabHost;
@@ -121,14 +119,14 @@ public class Main extends FragmentActivity
                     }
                     break;
                 case Constants.MESSAGE_WRITE:
-                    byte[] writeBuf = (byte[]) msg.obj;
-                    // construct a string from the buffer
-                    String writeMessage = new String(writeBuf);
+                    String writeMessage = (String) msg.obj;
                     break;
                 case Constants.MESSAGE_READ:
-                    byte[] readBuf = (byte[]) msg.obj;
-                    // construct a string from the valid bytes in the buffer
-                    String readMessage = new String(readBuf, 0, msg.arg1);
+//                    byte[] readBuf = (byte[]) msg.obj;
+//                    // construct a string from the valid bytes in the buffer
+//                    String readMessage = new String(readBuf, 0, msg.arg1);
+
+                    String readMessage = (String) msg.obj;
                     Log.i("MainActivity/mHandler", "Received message: " + readMessage);
                     CommunicationFragment f = getCommunicationFragment();
                     f.receivedNewMessage(readMessage);
@@ -332,8 +330,6 @@ public class Main extends FragmentActivity
         // Initialize the BluetoothChatService to perform bluetooth connections
         mChatService = new BluetoothChatService(this, mHandler);
 
-        // Initialize the buffer for outgoing messages
-        mOutStringBuffer = new StringBuffer("");
     }
 
 
@@ -471,11 +467,8 @@ public class Main extends FragmentActivity
             // Check that there's actually something to send
             if (message.length() > 0) {
                 // Get the message bytes and tell the BluetoothChatService to write
-                byte[] send = message.getBytes();
-                mChatService.write(send);
-
-                // Reset out string buffer to zero and clear the edit text field
-                mOutStringBuffer.setLength(0);
+                // Adding newline char in order to be able to parse messages as lines
+                mChatService.write(message + "\n");
             }
         } catch (NullPointerException e) {
             Log.e("MainActivity/sendMessage", "NullPointer");
