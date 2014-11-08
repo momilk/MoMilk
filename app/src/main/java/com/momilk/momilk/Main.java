@@ -42,7 +42,7 @@ public class Main extends FragmentActivity implements TabHost.OnTabChangeListene
 
     private BluetoothAdapter mBluetoothAdapter = null;
 
-    private BluetoothChatService mChatService = null;
+    private BluetoothService mChatService = null;
 
     private FragmentTabHost mTabHost;
     private HashMap mMapTabInfo = new HashMap();
@@ -101,22 +101,22 @@ public class Main extends FragmentActivity implements TabHost.OnTabChangeListene
     }
 
 
-    // The Handler that gets information back from the BluetoothChatService
+    // The Handler that gets information back from the BluetoothService
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case Constants.MESSAGE_STATE_CHANGE:
                     switch (msg.arg1) {
-                        case BluetoothChatService.STATE_CONNECTED:
+                        case BluetoothService.STATE_CONNECTED:
                             setStatus("Connected to: " + mConnectedDeviceName);
                             getCommunicationFragment();
                             break;
-                        case BluetoothChatService.STATE_CONNECTING:
+                        case BluetoothService.STATE_CONNECTING:
                             setStatus("Connecting...");
                             break;
-                        case BluetoothChatService.STATE_LISTEN:
-                        case BluetoothChatService.STATE_NONE:
+                        case BluetoothService.STATE_LISTEN:
+                        case BluetoothService.STATE_NONE:
                             setStatus("Not connected");
                             break;
                     }
@@ -208,7 +208,7 @@ public class Main extends FragmentActivity implements TabHost.OnTabChangeListene
         // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
 //        if (mChatService != null) {
 //            // Only if the state is STATE_NONE, do we know that we haven't started already
-//            if (mChatService.getState() == BluetoothChatService.STATE_NONE) {
+//            if (mChatService.getState() == BluetoothService.STATE_NONE) {
 //                // Start the Bluetooth chat services
 //                mChatService.start();
 //            }
@@ -340,8 +340,8 @@ public class Main extends FragmentActivity implements TabHost.OnTabChangeListene
 
     private void setupChat() {
 
-        // Initialize the BluetoothChatService to perform bluetooth connections
-        mChatService = new BluetoothChatService(this, mHandler);
+        // Initialize the BluetoothService to perform bluetooth connections
+        mChatService = new BluetoothService(this, mHandler);
 
     }
 
@@ -469,7 +469,7 @@ public class Main extends FragmentActivity implements TabHost.OnTabChangeListene
     public void sendMessage(String message) {
         //TODO: write this method
         // Check that we're actually connected before trying anything
-        if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
+        if (mChatService.getState() != BluetoothService.STATE_CONNECTED) {
             Toast.makeText(this, "Not connected to any device", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -478,7 +478,7 @@ public class Main extends FragmentActivity implements TabHost.OnTabChangeListene
         try {
             // Check that there's actually something to send
             if (message.length() > 0) {
-                // Get the message bytes and tell the BluetoothChatService to write
+                // Get the message bytes and tell the BluetoothService to write
                 // Adding newline char in order to be able to parse messages as lines
                 mChatService.write(message + "\n");
             }
