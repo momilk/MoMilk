@@ -1,31 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <Button
-        android:background="@drawable/round_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:text="@string/show_devices_btn"
-        android:id="@+id/new_measurement_btn"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="129dp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:gravity="center"
+        android:layout_margin="30dp">
 
-    <Button
-        android:background="@drawable/round_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:text="@string/listen_for_connection_btn"
-        android:id="@+id/sync_btn"
-        android:layout_below="@+id/new_measurement_btn"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="33dp"
-        android:layout_marginTop="143dp" />
-</RelativeLayout>
+        <Button
+            android:id="@+id/new_measurement_btn"
+            android:background="@drawable/round_button"
+            android:text="@string/new_measurement_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="20dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LOGO"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:width="100dp"/>
+
+        <Space
+            android:layout_width="60dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/sync_btn"
+            android:background="@drawable/round_button"
+            android:text="@string/sync_btn"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:padding="20dp"/>
+    </LinearLayout>
+
+</LinearLayout>

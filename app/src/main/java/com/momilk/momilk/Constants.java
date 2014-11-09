@@ -1,5 +1,10 @@
 package com.momilk.momilk;
 
+
+/**
+ * This class holds public constants. Constants which can be exposed without security/privacy
+ * drawbacks go here.
+ */
 public class Constants {
 
     // Intent request codes
@@ -21,6 +26,12 @@ public class Constants {
     // Key names received from the BluetoothService Handler
     public static final String DEVICE_NAME = "device_name";
     public static final String TOAST = "toast";
+
+    // Tags to be used for app's tabs
+    public static final String HOME_TAB_TAG = "home";
+    public static final String HISTORY_TAB_TAG = "history";
+    public static final String SETTINGS_TAB_TAG = "settings";
+    public static final String EXTRAS_TAB_TAG = "extras";
 
 
 }

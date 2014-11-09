@@ -117,6 +117,8 @@ public class BluetoothService {
     public synchronized void connect(BluetoothDevice device, boolean secure) {
         if (D) Log.d(TAG, "connect to: " + device.getName());
 
+        mAdapter.cancelDiscovery();
+
         // Cancel any thread attempting to make a connection
         if (mState == STATE_CONNECTING) {
             if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}

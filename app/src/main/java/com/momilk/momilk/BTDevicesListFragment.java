@@ -1,18 +1,13 @@
 package com.momilk.momilk;
 
 import android.app.Activity;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -22,13 +17,13 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 
-public class BTDevicesDebugFragment extends ListFragment {
+public class BTDevicesListFragment extends ListFragment {
 
 
-    private static final String LOG_TAG = "BTDevicesDebugFragment";
+    private static final String LOG_TAG = "BTDevicesListFragment";
 
     private MyCustomAdapter mAdapter;
-    private onBluetoothDeviceSelectedListener mCallback;
+    private BTDevicesListFragmentCallback mCallback;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,10 +48,10 @@ public class BTDevicesDebugFragment extends ListFragment {
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception
         try {
-            mCallback = (onBluetoothDeviceSelectedListener) activity;
+            mCallback = (BTDevicesListFragmentCallback) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement onBluetoothDeviceSelectedListener");
+                    + " must implement BTDevicesListFragmentCallback");
         }
     }
 
@@ -77,8 +72,7 @@ public class BTDevicesDebugFragment extends ListFragment {
         mCallback.deviceSelected(mAdapter.getItem(position));
     }
 
-
-    public interface onBluetoothDeviceSelectedListener {
+    public interface BTDevicesListFragmentCallback {
         public void deviceSelected(BluetoothDevice device);
     }
 

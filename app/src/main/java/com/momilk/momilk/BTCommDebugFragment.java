@@ -14,14 +14,14 @@ import android.widget.ListView;
 public class BTCommDebugFragment extends Fragment{
 
 
-    private static final String LOG_TAG = "BTDevicesDebugFragment";
+    private static final String LOG_TAG = "BTDevicesListFragment";
 
     private ArrayAdapter<String> mAdapter = null;
     private EditText mSendMsgEdt;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_communication, container, false);
+        View view = inflater.inflate(R.layout.fragment_debug_bt_comm, container, false);
 
         Button sendMsgBtn = (Button) view.findViewById(R.id.send_msg_btn);
 
@@ -45,7 +45,7 @@ public class BTCommDebugFragment extends Fragment{
     }
 
 
-    public void receivedNewMessage (String msg) {
+    public void newMessage(String msg) {
         if (mAdapter == null ) {
             Log.e(LOG_TAG, "mAdapter is null!");
         }

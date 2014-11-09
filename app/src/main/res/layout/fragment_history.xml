@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:orientation="vertical">
+
+        <ListView
+            android:id="@+id/history_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/show_day_history_btn"
+            android:text="Day"
+            android:background="@drawable/round_button"
+            android:layout_width="70dp"
+            android:layout_height="30dp" />
+
+        <Space
+            android:layout_width="20dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/show_week_history_btn"
+            android:text="Week"
+            android:background="@drawable/round_button"
+            android:layout_width="70dp"
+            android:layout_height="30dp" />
+
+        <Space
+            android:layout_width="20dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/show_month_history_btn"
+            android:text="Month"
+            android:background="@drawable/round_button"
+            android:layout_width="70dp"
+            android:layout_height="30dp" />
+
+    </LinearLayout>
+
+</LinearLayout>
