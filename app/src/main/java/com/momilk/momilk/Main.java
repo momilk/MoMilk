@@ -11,7 +11,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
@@ -22,7 +24,9 @@ import android.view.View;
 import android.widget.TabHost;
 import android.widget.Toast;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Stack;
@@ -479,8 +483,45 @@ public class Main extends FragmentActivity implements
 
 
     private void processNewMessage(String message) {
-        // TODO: implement message processign and store to db
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        try {
+            // TODO: implement all this stuff in a more general and maintainable state
+            String[] parts = message.split("@");
+            SimpleDateFormat fmt = new SimpleDateFormat("'W'HHmmssddMMyyyy");
+            Date date = fmt.parse(parts[0] + parts[1] + parts[2] + parts[3] +parts[4] +
+            parts[5] + parts[6]);
+
+            fmt = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+            String formattedDate = fmt.format(date);
+
+            String duration = parts[7];
+            String amount = parts[8];
+
+
+            final Toast summary = Toast.makeText(this, "Date: " + formattedDate +
+                    "\nDuration: " + duration + "\nAmount: " + amount,Toast.LENGTH_SHORT);
+            summary.show();
+
+            // Just dirty workaround to show a longer toast
+            new CountDownTimer(5000, 1000)
+            {
+
+                public void onTick(long millisUntilFinished) {summary.show();}
+                public void onFinish() {summary.show();}
+
+            }.start();
+
+            if (mDBAdapter.insertData(formattedDate, duration, amount) < 0) {
+                Log.e(LOG_TAG, "insertData failed!");
+            }
+
+
+        } catch(ParseException e) {
+            Log.w(LOG_TAG, "Got a message of unknown format: " + message);
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+
     }
 
 
@@ -565,27 +606,6 @@ public class Main extends FragmentActivity implements
 
     // -------------------------------------------------------------------------------------------
     //
-    // Database management logic
-    //
-    // -------------------------------------------------------------------------------------------
-
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    private void addToDatabase() {
-
-        // TODO: complete this method
-
-        long date = 0;
-        long time = 0;
-        if (mDBAdapter.insertData(date, time) < 0) {
-            // Something went wrong during insertion
-        }
-    }
-
-
-
-    // -------------------------------------------------------------------------------------------
-    //
     // Callback methods for interaction with HomeFragment
     //
     // -------------------------------------------------------------------------------------------
@@ -609,7 +629,9 @@ public class Main extends FragmentActivity implements
             registerForRerun(RERUN_SYNC_WITH_DEVICE);
             listBluetoothDevices();
         } else {
+            getHomeFragment();
             // Format the current date according to the decided format
+            // TODO: make all this formatting stuff generic and maintainable
             SimpleDateFormat fmt = new SimpleDateFormat("'T@'HH'@'mm'@'ss'@'dd'@'MM'@'yyyy");
             String dateMessage = fmt.format(new Date(System.currentTimeMillis()));
             Log.i(LOG_TAG, "sending the date as: " + dateMessage);
@@ -628,17 +650,8 @@ public class Main extends FragmentActivity implements
     // -------------------------------------------------------------------------------------------
 
     @Override
-    public void showHistoryAsTable() {
-
-        // TODO: complete this method
-
-    }
-
-    @Override
-    public void showHistoryAsGraph() {
-
-        // TODO: complete this method
-
+    public CustomDatabaseAdapter getHistoryDatabaseAdapter() {
+        return mDBAdapter;
     }
 
 
@@ -687,6 +700,40 @@ public class Main extends FragmentActivity implements
             Log.e(LOG_TAG, "FragmentContainer for the current tab is null");
         }
         return (BTCommDebugFragment) fc.replaceContent(BTCommDebugFragment.class, null);
+
+    }
+
+
+    private HomeFragment getHomeFragment() {
+
+        mTabHost.setCurrentTabByTag(Constants.HOME_TAB_TAG);
+
+        FragmentContainer fc =
+                (FragmentContainer) getSupportFragmentManager().findFragmentById(android.R.id.tabcontent);
+
+        if (fc == null) {
+            Log.e(LOG_TAG, "FragmentContainer for the current tab is null");
+        }
+
+        return (HomeFragment) fc.replaceContent(HomeFragment.class, null);
+
+    }
+
+
+
+
+    private HistoryFragment getHistoryFragment() {
+
+        mTabHost.setCurrentTabByTag(Constants.HISTORY_TAB_TAG);
+
+        FragmentContainer fc =
+                (FragmentContainer) getSupportFragmentManager().findFragmentById(android.R.id.tabcontent);
+
+        if (fc == null) {
+            Log.e(LOG_TAG, "FragmentContainer for the current tab is null");
+        }
+
+        return (HistoryFragment) fc.replaceContent(HistoryFragment.class, null);
 
     }
 

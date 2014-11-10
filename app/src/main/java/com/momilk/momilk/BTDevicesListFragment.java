@@ -22,7 +22,7 @@ public class BTDevicesListFragment extends ListFragment {
 
     private static final String LOG_TAG = "BTDevicesListFragment";
 
-    private MyCustomAdapter mAdapter;
+    private BTDevicesArrayAdapter mAdapter;
     private BTDevicesListFragmentCallback mCallback;
 
     @Override
@@ -33,7 +33,7 @@ public class BTDevicesListFragment extends ListFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        mAdapter = new MyCustomAdapter(getActivity(),
+        mAdapter = new BTDevicesArrayAdapter(getActivity(),
                 android.R.layout.simple_list_item_1);
 
         setListAdapter(mAdapter);
@@ -77,11 +77,11 @@ public class BTDevicesListFragment extends ListFragment {
     }
 
 
-    private class MyCustomAdapter extends ArrayAdapter<BluetoothDevice> {
+    private class BTDevicesArrayAdapter extends ArrayAdapter<BluetoothDevice> {
 
         private ArrayList<BluetoothDevice> mDevicesList;
 
-        public MyCustomAdapter(Context context, int textViewResourceId) {
+        public BTDevicesArrayAdapter(Context context, int textViewResourceId) {
             super(context, textViewResourceId);
             this.mDevicesList = new ArrayList<BluetoothDevice>();
         }

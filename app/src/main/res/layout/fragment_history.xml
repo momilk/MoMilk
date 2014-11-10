@@ -59,4 +59,34 @@
 
     </LinearLayout>
 
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/delete_table_btn"
+            android:text="Delete table"
+            android:background="@drawable/round_button"
+            android:layout_width="150dp"
+            android:layout_height="30dp" />
+
+        <Space
+            android:layout_width="20dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/delete_db_btn"
+            android:text="Delete DB"
+            android:background="@drawable/round_button"
+            android:layout_width="150dp"
+            android:layout_height="30dp" />
+
+
+    </LinearLayout>
+
 </LinearLayout>
