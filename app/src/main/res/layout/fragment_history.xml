@@ -69,19 +69,8 @@
         android:gravity="center">
 
         <Button
-            android:id="@+id/delete_table_btn"
-            android:text="Delete table"
-            android:background="@drawable/round_button"
-            android:layout_width="150dp"
-            android:layout_height="30dp" />
-
-        <Space
-            android:layout_width="20dp"
-            android:layout_height="match_parent" />
-
-        <Button
-            android:id="@+id/delete_db_btn"
-            android:text="Delete DB"
+            android:id="@+id/clear_table_btn"
+            android:text="Clear table"
             android:background="@drawable/round_button"
             android:layout_width="150dp"
             android:layout_height="30dp" />

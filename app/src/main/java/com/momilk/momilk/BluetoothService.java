@@ -350,7 +350,7 @@ public class BluetoothService {
             // Get a BluetoothSocket for a connection with the
             // given BluetoothDevice
             try {
-                if (device.getName().equals("MYBLUE")) {
+                if (device.getName().equals("MYBLUE") || device.getName().equals("HC-05")) {
                     tmp = device.createInsecureRfcommSocketToServiceRecord(
                             GENERAL_UUID);
                 }

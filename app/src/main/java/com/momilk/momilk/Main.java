@@ -487,18 +487,25 @@ public class Main extends FragmentActivity implements
             // TODO: implement all this stuff in a more general and maintainable state
             String[] parts = message.split("@");
             SimpleDateFormat fmt = new SimpleDateFormat("'W'HHmmssddMMyyyy");
-            Date date = fmt.parse(parts[0] + parts[1] + parts[2] + parts[3] +parts[4] +
-            parts[5] + parts[6]);
+            // TODO: there is bug here - it will output incorrect date if the original message contain single number values (like 1@1@1970)
+            Date date = fmt.parse(parts[0] + parts[3] + parts[4] + parts[5] +parts[6] +
+            parts[7] + parts[8]);
 
             fmt = new SimpleDateFormat("dd-MM-yyyy HH:mm");
             String formattedDate = fmt.format(date);
 
-            String duration = parts[7];
-            String amount = parts[8];
-
+            String index = parts[1];
+            String leftOrRight = parts[2];
+            String duration = parts[9];
+            String amount = parts[10];
+            String deltaRoll = parts[10];
+            String deltaTilt = parts[11];
 
             final Toast summary = Toast.makeText(this, "Date: " + formattedDate +
-                    "\nDuration: " + duration + "\nAmount: " + amount,Toast.LENGTH_SHORT);
+                    "\nIndex: " + index +"\nL/R: " + leftOrRight +
+                    "\nDuration: " + duration + "\nAmount: " + amount +
+                    "\n\u0394Roll: " + deltaRoll + "\n\u0394Tilt: " + deltaTilt,
+                    Toast.LENGTH_SHORT);
             summary.show();
 
             // Just dirty workaround to show a longer toast
@@ -510,7 +517,8 @@ public class Main extends FragmentActivity implements
 
             }.start();
 
-            if (mDBAdapter.insertData(formattedDate, duration, amount) < 0) {
+            if (mDBAdapter.insertData(index, leftOrRight, formattedDate,
+                    duration, amount, deltaRoll, deltaTilt) < 0) {
                 Log.e(LOG_TAG, "insertData failed!");
             }
 
@@ -518,7 +526,12 @@ public class Main extends FragmentActivity implements
         } catch(ParseException e) {
             Log.w(LOG_TAG, "Got a message of unknown format: " + message);
             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-            return;
+        } catch (IndexOutOfBoundsException e) {
+            Log.w(LOG_TAG, "Got a message of unknown format: " + message);
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        } catch (NullPointerException e) {
+            Log.w(LOG_TAG, "Got a message of unknown format: " + message);
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         }
 
 

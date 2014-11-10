@@ -2,6 +2,7 @@ package com.momilk.momilk;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -12,6 +13,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,20 +59,11 @@ public class HistoryFragment extends Fragment{
         });
 
 
-        Button deleteTableBtn = (Button) view.findViewById(R.id.delete_table_btn);
-        deleteTableBtn.setOnClickListener(new View.OnClickListener() {
+        Button clearTableBtn = (Button) view.findViewById(R.id.clear_table_btn);
+        clearTableBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                deleteTable();
-            }
-        });
-
-
-        Button deleteDBBtn = (Button) view.findViewById(R.id.delete_db_btn);
-        deleteDBBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                deleteDB();
+                clearTable();
             }
         });
 
@@ -101,23 +95,22 @@ public class HistoryFragment extends Fragment{
 
 
     public void showHistoryAsTable() {
+
         ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getHistory();
+        mAdapter.clear();
         if (history != null && history.size() > 0) {
-            mAdapter.clear();
             mAdapter.addAll(history);
-            mAdapter.notifyDataSetChanged();
         } else {
             Log.w(LOG_TAG, "history array is either empty or null");
         }
+        mAdapter.notifyDataSetChanged();
     }
 
-    private void deleteTable() {
-        mCallback.getHistoryDatabaseAdapter().deleteTable();
+    private void clearTable() {
+        mCallback.getHistoryDatabaseAdapter().clearTable();
+        showHistoryAsTable();
     }
 
-    private void deleteDB() {
-        mCallback.getHistoryDatabaseAdapter().deleteDB();
-    }
 
     // Container Activity must implement this interface
     public interface HistoryFragmentCallback {
@@ -127,15 +120,38 @@ public class HistoryFragment extends Fragment{
     public static class HistoryEntry {
 
         private int mUid;
+        private String mLeftOrRight;
         private String mDate;
         private int mDuration;
         private int mAmount;
+        private int mDeltaRoll;
+        private int mDeltaTilt;
 
-        public HistoryEntry(int uid, String date, int duration, int amount) {
+        public HistoryEntry(int uid, String leftOrRight, String date, int duration, int amount,
+                            int delta_roll, int delta_tilt) {
             mUid = uid;
+            mLeftOrRight = leftOrRight;
             mDate = date;
             mDuration = duration;
             mAmount = amount;
+            mDeltaRoll = delta_roll;
+            mDeltaTilt = delta_tilt;
+        }
+
+        public void setDeltaTilt(int deltaTilt) {
+            this.mDeltaTilt = deltaTilt;
+        }
+
+        public void setDeltaRoll(int deltaRoll) {
+            this.mDeltaRoll = deltaRoll;
+        }
+
+        public int getDeltaRoll() {
+            return mDeltaRoll;
+        }
+
+        public int getDeltaTilt() {
+            return mDeltaTilt;
         }
 
         public void setUid(int mUid) {
@@ -154,10 +170,7 @@ public class HistoryFragment extends Fragment{
             this.mAmount = mAmount;
         }
 
-        public int getUid() {
-
-            return mUid;
-        }
+        public int getUid() { return mUid; }
 
         public String getDate() {
             return mDate;
@@ -170,6 +183,10 @@ public class HistoryFragment extends Fragment{
         public int getAmount() {
             return mAmount;
         }
+
+        public String getLeftOrRight() { return mLeftOrRight; }
+
+        public void setLeftOrRight(String leftOrRight) { mLeftOrRight = leftOrRight; }
     }
 
 
@@ -182,9 +199,12 @@ public class HistoryFragment extends Fragment{
 
         private class ViewHolder {
             TextView idTxt;
+            TextView leftOrRightTxt;
             TextView dateTxt;
             TextView durationTxt;
             TextView amountTxt;
+            TextView deltaRollTxt;
+            TextView deltaTiltTxt;
         }
 
         public HistoryArrayAdapter(Context context, int resource) {
@@ -214,6 +234,8 @@ public class HistoryFragment extends Fragment{
                 viewHolder.dateTxt = (TextView) convertView.findViewById(R.id.date_txt);
                 viewHolder.durationTxt = (TextView) convertView.findViewById(R.id.duration_txt);
                 viewHolder.amountTxt = (TextView) convertView.findViewById(R.id.amount_txt);
+                viewHolder.deltaRollTxt = (TextView) convertView.findViewById(R.id.delta_roll_txt);
+                viewHolder.deltaTiltTxt = (TextView) convertView.findViewById(R.id.delta_tilt_txt);
 
                 convertView.setTag(viewHolder);
             } else {
@@ -227,6 +249,14 @@ public class HistoryFragment extends Fragment{
                 viewHolder.dateTxt.setText("Date: " + entry.getDate());
                 viewHolder.durationTxt.setText("Duration: " + Integer.toString(entry.getDuration()));
                 viewHolder.amountTxt.setText("Amount: " + Integer.toString(entry.getAmount()));
+                viewHolder.deltaRollTxt.setText("\u0394Roll: " + Integer.toString(entry.getDeltaRoll()));
+                viewHolder.deltaTiltTxt.setText("\u0394Tilt: " + Integer.toString(entry.getDeltaTilt()));
+
+                if(entry.getLeftOrRight().equals("R")) {
+                    convertView.setBackgroundColor(getResources().getColor(R.color.bluedark));
+                } else {
+                    convertView.setBackgroundColor(getResources().getColor(R.color.greenlight));
+                }
             } else {
                 Log.e(LOG_TAG, "history entry is null!");
             }
