@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -20,8 +21,13 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TabHost;
+import android.widget.TabWidget;
 import android.widget.Toast;
 
 import java.text.ParseException;
@@ -54,7 +60,7 @@ public class Main extends FragmentActivity implements
     private BluetoothService mBluetoothService = null;
 
     private FragmentTabHost mTabHost;
-    private HashMap mMapTabInfo = new HashMap();
+    private HashMap<String, TabInfo> mMapTabInfo = new HashMap<String, TabInfo>();
     private TabInfo mLastTab = null;
 
     private String mConnectedDeviceName = null;
@@ -64,8 +70,6 @@ public class Main extends FragmentActivity implements
     // These variables alongside RERUN_... constants will be used in order to get back to methods
     // that have dependencies on either async events or user actions.
     private Stack<Integer> mRerunMethodStack;
-
-
 
 
     private void setStatus(int resId) {
@@ -313,15 +317,17 @@ public class Main extends FragmentActivity implements
     private class TabInfo {
         private String mTag;
         private Class mClass;
+        private int mIconId;
 
         @SuppressWarnings("UnusedDeclaration") // Keep it just in case
         private Bundle mArgs;
 
         private FragmentContainer mFragmentContainer;
 
-        TabInfo(String tag, Class clazz, Bundle args) {
+        TabInfo(String tag, Bundle args) {
             mTag = tag;
-            mClass = clazz;
+            mClass = Constants.DEFAULT_TAB_FRAGMENT_MAP.get(tag);
+            mIconId = Constants.TAB_ICON_MAP.get(tag);
             mArgs = args;
         }
 
@@ -353,34 +359,28 @@ public class Main extends FragmentActivity implements
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
         TabInfo tabInfo;
         if (BT_DEBUG_LAYOUT) {
+            // TODO: remove this part and implement debug features via action bar visibility
             // This tab is used for BT debug
-            Main.addTab(this, mTabHost,
-                    mTabHost.newTabSpec(Constants.HOME_TAB_TAG).setIndicator(getString(R.string.home_tab_indicator)),
-                    tabInfo = new TabInfo(Constants.HOME_TAB_TAG, BTControlDebugFragment.class, args));
+            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.HOME_TAB_TAG),
+                    tabInfo = new TabInfo(Constants.HOME_TAB_TAG, args));
             mMapTabInfo.put(tabInfo.mTag, tabInfo);
 
             // This tab is used for BT debug
-            Main.addTab(this, mTabHost,
-                    mTabHost.newTabSpec("comm").setIndicator("Comm"),
-                    tabInfo = new TabInfo("comm", BTCommDebugFragment.class, args));
+            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.COMM_TAB_TAG),
+                    tabInfo = new TabInfo(Constants.COMM_TAB_TAG, args));
             mMapTabInfo.put(tabInfo.mTag, tabInfo);
         } else {
-
-            Main.addTab(this, mTabHost,
-                    mTabHost.newTabSpec(Constants.HOME_TAB_TAG).setIndicator(getString(R.string.home_tab_indicator)),
-                    tabInfo = new TabInfo(Constants.HOME_TAB_TAG, HomeFragment.class, args));
+            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.HOME_TAB_TAG),
+                    tabInfo = new TabInfo(Constants.HOME_TAB_TAG, args));
             mMapTabInfo.put(tabInfo.mTag, tabInfo);
-            Main.addTab(this, mTabHost,
-                    mTabHost.newTabSpec(Constants.SETTINGS_TAB_TAG).setIndicator(getString(R.string.settings_tab_indicator)),
-                    tabInfo = new TabInfo(Constants.SETTINGS_TAB_TAG, SettingsFragment.class, args));
+            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.SETTINGS_TAB_TAG),
+                    tabInfo = new TabInfo(Constants.SETTINGS_TAB_TAG, args));
             mMapTabInfo.put(tabInfo.mTag, tabInfo);
-            Main.addTab(this, mTabHost,
-                    mTabHost.newTabSpec(Constants.HISTORY_TAB_TAG).setIndicator(getString(R.string.history_tab_indicator)),
-                    tabInfo = new TabInfo(Constants.HISTORY_TAB_TAG, HistoryFragment.class, args));
+            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.HISTORY_TAB_TAG),
+                    tabInfo = new TabInfo(Constants.HISTORY_TAB_TAG, args));
             mMapTabInfo.put(tabInfo.mTag, tabInfo);
-            Main.addTab(this, mTabHost,
-                    mTabHost.newTabSpec(Constants.EXTRAS_TAB_TAG).setIndicator(getString(R.string.extras_tab_indicator)),
-                    tabInfo = new TabInfo(Constants.EXTRAS_TAB_TAG, ExtrasFragment.class, args));
+            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.EXTRAS_TAB_TAG),
+                    tabInfo = new TabInfo(Constants.EXTRAS_TAB_TAG, args));
             mMapTabInfo.put(tabInfo.mTag, tabInfo);
         }
 
@@ -409,6 +409,13 @@ public class Main extends FragmentActivity implements
             ft.commit();
             activity.getSupportFragmentManager().executePendingTransactions();
         }
+
+        View tabView = LayoutInflater.from(activity).inflate(R.layout.tab, null);
+        ImageView image = (ImageView) tabView.findViewById(R.id.tab_icon);
+
+        image.setImageResource(tabInfo.mIconId);
+
+        tabSpec.setIndicator(tabView);
 
         // Each tab contains FragmentContainer
         tabHost.addTab(tabSpec, FragmentContainer.class, null);
@@ -449,6 +456,27 @@ public class Main extends FragmentActivity implements
             Log.e(LOG_TAG, "newTab is null!");
         }
 
+        refreshTabBackgrounds();
+
+    }
+
+    private void refreshTabBackgrounds() {
+        int defaultTabColor = R.color.grey;
+        int selectedTabColor = R.color.background;
+
+        int numOfTabs = mTabHost.getTabWidget().getTabCount();
+        View tabView;
+        for(int i=0; i < numOfTabs; i++) {
+            tabView = mTabHost.getTabWidget().getChildTabViewAt(i);
+
+            tabView.setBackgroundColor(getResources().getColor(defaultTabColor));
+            tabView.findViewById(R.id.tab_icon).setBackgroundColor(getResources().getColor(defaultTabColor));
+        }
+
+        View currentTabView = mTabHost.getCurrentTabView();
+        currentTabView.setBackgroundColor(getResources().getColor(selectedTabColor));
+        View currentIcon = currentTabView.findViewById(R.id.tab_icon);
+        currentIcon.setBackgroundColor(getResources().getColor(selectedTabColor));
     }
 
     // -------------------------------------------------------------------------------------------

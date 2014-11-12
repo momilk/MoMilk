@@ -9,16 +9,18 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2"
+        android:layout_weight="5"
         android:gravity="center"
         android:layout_margin="30dp">
 
         <Button
             android:id="@+id/new_measurement_btn"
-            android:background="@drawable/round_button"
+            android:background="@drawable/big_ring_button_selector"
             android:text="@string/new_measurement_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:textColor="@color/orangelight"
+            android:scaleType="fitCenter"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
             android:padding="20dp"/>
 
     </LinearLayout>
@@ -26,30 +28,30 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="4"
         android:orientation="horizontal"
-        android:layout_gravity="center"
         android:gravity="center">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="LOGO"
-            android:gravity="center"
-            android:textSize="20sp"
-            android:width="100dp"/>
+            android:textSize="20sp"/>
 
         <Space
             android:layout_width="60dp"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"/>
 
         <Button
             android:id="@+id/sync_btn"
-            android:background="@drawable/round_button"
+            android:background="@drawable/small_ring_button_selector"
             android:text="@string/sync_btn"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
+            android:textColor="@color/orangelight"
+            android:scaleType="fitCenter"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
             android:padding="20dp"/>
+
     </LinearLayout>
 
 </LinearLayout>

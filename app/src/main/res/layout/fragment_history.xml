@@ -31,7 +31,7 @@
         <Button
             android:id="@+id/show_day_history_btn"
             android:text="Day"
-            android:background="@drawable/round_button"
+            android:background="@drawable/rectangle_button_selector"
             android:layout_width="70dp"
             android:layout_height="30dp" />
 
@@ -42,7 +42,7 @@
         <Button
             android:id="@+id/show_week_history_btn"
             android:text="Week"
-            android:background="@drawable/round_button"
+            android:background="@drawable/rectangle_button_selector"
             android:layout_width="70dp"
             android:layout_height="30dp" />
 
@@ -53,7 +53,7 @@
         <Button
             android:id="@+id/show_month_history_btn"
             android:text="Month"
-            android:background="@drawable/round_button"
+            android:background="@drawable/rectangle_button_selector"
             android:layout_width="70dp"
             android:layout_height="30dp" />
 
@@ -71,7 +71,7 @@
         <Button
             android:id="@+id/clear_table_btn"
             android:text="Clear table"
-            android:background="@drawable/round_button"
+            android:background="@drawable/rectangle_button_selector"
             android:layout_width="150dp"
             android:layout_height="30dp" />
 
