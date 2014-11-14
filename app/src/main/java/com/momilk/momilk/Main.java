@@ -487,7 +487,7 @@ public class Main extends FragmentActivity implements
 
 
     /**
-     * This method sends a message over bluetooth channel is there is a connected device. Newline
+     * This method sends a message over bluetooth channel if there is a connected device. Newline
      * char is appended at the end in order to allow processing messages in a line-by-line
      * manner
      * @param message
