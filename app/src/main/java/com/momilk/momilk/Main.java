@@ -343,29 +343,32 @@ public class Main extends FragmentActivity implements
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
         TabInfo tabInfo;
+        Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.HOME_TAB_TAG),
+                tabInfo = new TabInfo(Constants.HOME_TAB_TAG, args));
+        mMapTabInfo.put(tabInfo.mTag, tabInfo);
+        Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.SETTINGS_TAB_TAG),
+                tabInfo = new TabInfo(Constants.SETTINGS_TAB_TAG, args));
+        mMapTabInfo.put(tabInfo.mTag, tabInfo);
+        Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.HISTORY_TAB_TAG),
+                tabInfo = new TabInfo(Constants.HISTORY_TAB_TAG, args));
+        mMapTabInfo.put(tabInfo.mTag, tabInfo);
+        Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.EXTRAS_TAB_TAG),
+                tabInfo = new TabInfo(Constants.EXTRAS_TAB_TAG, args));
+        mMapTabInfo.put(tabInfo.mTag, tabInfo);
+
+
         if (BT_DEBUG_LAYOUT) {
+
             // TODO: remove this part and implement debug features via action bar visibility
             // This tab is used for BT debug
-            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.HOME_TAB_TAG),
-                    tabInfo = new TabInfo(Constants.HOME_TAB_TAG, args));
+            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.CTRL_TAB_TAG),
+                    tabInfo = new TabInfo(Constants.CTRL_TAB_TAG, args));
             mMapTabInfo.put(tabInfo.mTag, tabInfo);
 
+            // TODO: remove this part and implement debug features via action bar visibility
             // This tab is used for BT debug
             Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.COMM_TAB_TAG),
                     tabInfo = new TabInfo(Constants.COMM_TAB_TAG, args));
-            mMapTabInfo.put(tabInfo.mTag, tabInfo);
-        } else {
-            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.HOME_TAB_TAG),
-                    tabInfo = new TabInfo(Constants.HOME_TAB_TAG, args));
-            mMapTabInfo.put(tabInfo.mTag, tabInfo);
-            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.SETTINGS_TAB_TAG),
-                    tabInfo = new TabInfo(Constants.SETTINGS_TAB_TAG, args));
-            mMapTabInfo.put(tabInfo.mTag, tabInfo);
-            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.HISTORY_TAB_TAG),
-                    tabInfo = new TabInfo(Constants.HISTORY_TAB_TAG, args));
-            mMapTabInfo.put(tabInfo.mTag, tabInfo);
-            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.EXTRAS_TAB_TAG),
-                    tabInfo = new TabInfo(Constants.EXTRAS_TAB_TAG, args));
             mMapTabInfo.put(tabInfo.mTag, tabInfo);
         }
 
@@ -538,7 +541,7 @@ public class Main extends FragmentActivity implements
             Date date = fmt.parse(parts[0] + parts[3] + parts[4] + parts[5] +parts[6] +
             parts[7] + parts[8]);
 
-            fmt = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+            fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
             String formattedDate = fmt.format(date);
 
             String index = parts[1];

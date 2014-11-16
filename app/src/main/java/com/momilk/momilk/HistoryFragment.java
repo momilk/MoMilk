@@ -72,8 +72,8 @@ public class HistoryFragment extends Fragment{
 
         ListView historyList = (ListView) view.findViewById(R.id.history_list);
 
-        TextView emptyText = (TextView)view.findViewById(android.R.id.empty);
-        historyList.setEmptyView(emptyText);
+//        TextView emptyText = (TextView)view.findViewById(android.R.id.empty);
+//        historyList.setEmptyView(emptyText);
 
         mAdapter = new HistoryArrayAdapter(getActivity(), R.layout.history_item_row);
         historyList.setAdapter(mAdapter);

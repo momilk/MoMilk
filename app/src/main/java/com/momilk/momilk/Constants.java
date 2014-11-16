@@ -38,6 +38,7 @@ public class Constants {
     public static final String EXTRAS_TAB_TAG = "extras";
     // Debug tabs
     public static final String COMM_TAB_TAG = "comm";
+    public static final String CTRL_TAB_TAG = "ctrl";
 
 
     /*
@@ -51,6 +52,7 @@ public class Constants {
         map.put(SETTINGS_TAB_TAG, SettingsFragment.class);
         map.put(EXTRAS_TAB_TAG, ExtrasFragment.class);
         map.put(COMM_TAB_TAG, BTCommDebugFragment.class);
+        map.put(CTRL_TAB_TAG, BTControlDebugFragment.class);
         DEFAULT_TAB_FRAGMENT_MAP = Collections.unmodifiableMap(map);
     }
 
@@ -69,6 +71,7 @@ public class Constants {
         map.put(SettingsFragment.class, SETTINGS_TAB_TAG);
         map.put(ExtrasFragment.class, EXTRAS_TAB_TAG);
         map.put(BTCommDebugFragment.class, COMM_TAB_TAG); // TODO: make debug fragments available through action bar on HOME tab
+        map.put(BTControlDebugFragment.class, CTRL_TAB_TAG); // TODO: make debug fragments available through action bar on HOME tab
         FRAGMENT_TO_TAB_MAP = Collections.unmodifiableMap(map);
     }
 
@@ -83,6 +86,7 @@ public class Constants {
         map.put(SETTINGS_TAB_TAG, R.drawable.ic_home_tab);
         map.put(EXTRAS_TAB_TAG, R.drawable.ic_home_tab);
         map.put(COMM_TAB_TAG, R.drawable.ic_home_tab);
+        map.put(CTRL_TAB_TAG, R.drawable.ic_home_tab);
         TAB_ICON_MAP = Collections.unmodifiableMap(map);
     }
 

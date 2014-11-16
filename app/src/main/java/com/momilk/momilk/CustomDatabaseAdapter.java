@@ -42,20 +42,17 @@ public class CustomDatabaseAdapter {
     }
 
     public ArrayList<HistoryFragment.HistoryEntry> getDayHistory() {
-        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 day') AND " +
-                CustomSQLOpenHelper.DATE + " <=  date('now')");
+        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 days')");
     }
 
 
     public ArrayList<HistoryFragment.HistoryEntry> getWeekHistory() {
-        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 week') AND " +
-                CustomSQLOpenHelper.DATE + " <=  date('now')");
+        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-7 days')");
     }
 
 
     public ArrayList<HistoryFragment.HistoryEntry> getMonthHistory() {
-        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 month') AND " +
-                CustomSQLOpenHelper.DATE + " <=  date('now')");
+        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 month')");
     }
 
     private ArrayList<HistoryFragment.HistoryEntry> getHistory(String selection) {
