@@ -28,33 +28,36 @@ public class HistoryFragment extends Fragment{
 
     private HistoryFragmentCallback mCallback;
     private HistoryArrayAdapter mAdapter;
+    private Button mShowDayHistoryBtn;
+    private Button mShowWeekHistoryBtn;
+    private Button mShowMonthHistoryBtn;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_history, container, false);
 
 
-        Button showDayHistoryBtn = (Button) view.findViewById(R.id.show_day_history_btn);
-        showDayHistoryBtn.setOnClickListener(new View.OnClickListener() {
+        mShowDayHistoryBtn = (Button) view.findViewById(R.id.show_day_history_btn);
+        mShowDayHistoryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: add the appropriate logic here
+                showDayHistory();
             }
         });
 
-        Button showWeekHistoryBtn = (Button) view.findViewById(R.id.show_week_history_btn);
-        showWeekHistoryBtn.setOnClickListener(new View.OnClickListener() {
+        mShowWeekHistoryBtn = (Button) view.findViewById(R.id.show_week_history_btn);
+        mShowWeekHistoryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: add the appropriate logic here
+                showWeekHistory();
             }
         });
 
-        Button showMonthHistoryBtn = (Button) view.findViewById(R.id.show_month_history_btn);
-        showMonthHistoryBtn.setOnClickListener(new View.OnClickListener() {
+        mShowMonthHistoryBtn = (Button) view.findViewById(R.id.show_month_history_btn);
+        mShowMonthHistoryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: add the appropriate logic here
+                showMonthHistory();
             }
         });
 
@@ -68,11 +71,14 @@ public class HistoryFragment extends Fragment{
         });
 
         ListView historyList = (ListView) view.findViewById(R.id.history_list);
-        mAdapter = new HistoryArrayAdapter(getActivity(), R.layout.history_item_row);
 
+        TextView emptyText = (TextView)view.findViewById(android.R.id.empty);
+        historyList.setEmptyView(emptyText);
+
+        mAdapter = new HistoryArrayAdapter(getActivity(), R.layout.history_item_row);
         historyList.setAdapter(mAdapter);
 
-        showHistoryAsTable();
+        showDayHistory();
 
         return view;
 
@@ -94,21 +100,47 @@ public class HistoryFragment extends Fragment{
     }
 
 
-    public void showHistoryAsTable() {
+    public void showDayHistory() {
 
-        ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getHistory();
+        mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
+        mShowWeekHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
+        mShowMonthHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
+
+        ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getDayHistory();
         mAdapter.clear();
-        if (history != null && history.size() > 0) {
-            mAdapter.addAll(history);
-        } else {
-            Log.w(LOG_TAG, "history array is either empty or null");
-        }
+        mAdapter.addAll(history);
+        mAdapter.notifyDataSetChanged();
+    }
+
+
+    public void showWeekHistory() {
+
+        mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
+        mShowWeekHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
+        mShowMonthHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
+
+        ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getWeekHistory();
+        mAdapter.clear();
+        mAdapter.addAll(history);
+        mAdapter.notifyDataSetChanged();
+    }
+
+
+    public void showMonthHistory() {
+
+        mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
+        mShowWeekHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
+        mShowMonthHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
+
+        ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getMonthHistory();
+        mAdapter.clear();
+        mAdapter.addAll(history);
         mAdapter.notifyDataSetChanged();
     }
 
     private void clearTable() {
         mCallback.getHistoryDatabaseAdapter().clearTable();
-        showHistoryAsTable();
+        showDayHistory();
     }
 
 

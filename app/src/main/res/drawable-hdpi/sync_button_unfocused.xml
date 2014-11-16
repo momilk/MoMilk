@@ -1,0 +1,26 @@
+
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:shape="ring"
+            android:innerRadius="@dimen/sync_button_external_inner_radius"
+            android:thickness="@dimen/sync_button_external_thickness"
+            android:useLevel="false">
+            <solid android:color="@color/white" />
+
+        </shape>
+    </item>
+    <item>
+
+        <shape
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:shape="ring"
+            android:innerRadius="0dp"
+            android:thickness="@dimen/sync_button_internal_thickness"
+            android:useLevel="false">
+            <solid android:color="@color/white" />
+
+        </shape>
+    </item>
+</layer-list>

@@ -64,33 +64,35 @@ public class FragmentContainer extends Fragment {
 
         if (curFrag != null && claz.isInstance(curFrag)) {
             // The currently shown fragment is the same as the new one - nothing to do
-            Log.i("FragmentContainer", "the fragment " + claz.getSimpleName() + " is already shown");
+            Log.d("FragmentContainer", "the fragment " + claz.getSimpleName() + " is already shown");
             return curFrag;
-        }
+        } else {
+            FragmentTransaction tx = getChildFragmentManager().beginTransaction();
 
+            if (curFrag != null) {
+                // Save the state
+                tx.addToBackStack(curFrag.getClass().getSimpleName());
+            }
 
-        FragmentTransaction tx = getChildFragmentManager().beginTransaction();
+            // TODO: add these effects to any fragment change, not just the creation of a new fragment
+            //tx.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 
-        tx.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-
-        if (curFrag != null) {
-            // save
-            tx.addToBackStack(curFrag.getClass().getSimpleName());
-        }
-
-        // change
-        try {
-            Fragment newFragment = claz.newInstance();
-            newFragment.setArguments(args);
-            tx.replace(R.id.fragment_content, newFragment, claz.getClass().getSimpleName());
-            tx.commit();
-            getChildFragmentManager().executePendingTransactions();
-            return newFragment;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            Log.d("FragmentContainer", "creating new  " + claz.getSimpleName());
+            // Change to a new fragment
+            try {
+                Fragment newFragment = claz.newInstance();
+                newFragment.setArguments(args);
+                tx.replace(R.id.fragment_content, newFragment, claz.getClass().getSimpleName());
+                tx.commit();
+                getChildFragmentManager().executePendingTransactions();
+                return newFragment;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
         }
     }
+
 
     // Suppress "unchecked" warning. claz variable is checked for compatibility with Fragment class
     // inside the surrounding "if" statement

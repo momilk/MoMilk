@@ -41,14 +41,31 @@ public class CustomDatabaseAdapter {
         return id;
     }
 
-    public ArrayList<HistoryFragment.HistoryEntry> getHistory() {
+    public ArrayList<HistoryFragment.HistoryEntry> getDayHistory() {
+        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 day') AND " +
+                CustomSQLOpenHelper.DATE + " <=  date('now')");
+    }
+
+
+    public ArrayList<HistoryFragment.HistoryEntry> getWeekHistory() {
+        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 week') AND " +
+                CustomSQLOpenHelper.DATE + " <=  date('now')");
+    }
+
+
+    public ArrayList<HistoryFragment.HistoryEntry> getMonthHistory() {
+        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 month') AND " +
+                CustomSQLOpenHelper.DATE + " <=  date('now')");
+    }
+
+    private ArrayList<HistoryFragment.HistoryEntry> getHistory(String selection) {
         SQLiteDatabase db = mHelper.getReadableDatabase();
 
         String[] columns = {CustomSQLOpenHelper.UID, CustomSQLOpenHelper.LEFT_OR_RIGHT,
                 CustomSQLOpenHelper.DATE, CustomSQLOpenHelper.DURATION, CustomSQLOpenHelper.AMOUNT,
                 CustomSQLOpenHelper.DELTA_ROLL, CustomSQLOpenHelper.DELTA_TILT};
 
-        Cursor cursor = db.query(CustomSQLOpenHelper.TABLE_NAME, columns, null, null, null, null, null);
+        Cursor cursor = db.query(CustomSQLOpenHelper.TABLE_NAME, columns, selection, null, null, null, null);
 
         ArrayList<HistoryFragment.HistoryEntry> history = new ArrayList<HistoryFragment.HistoryEntry>();
         

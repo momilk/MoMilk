@@ -54,6 +54,24 @@ public class Constants {
         DEFAULT_TAB_FRAGMENT_MAP = Collections.unmodifiableMap(map);
     }
 
+
+    /*
+    This map is used in order to map fragments into their tabs (in which tab the ftagment
+    should be shown)
+     */
+    public static final Map<Class, String> FRAGMENT_TO_TAB_MAP;
+    static {
+        Map<Class, String> map = new HashMap<Class, String>();
+        map.put(HomeFragment.class, HOME_TAB_TAG);
+        map.put(BTDevicesListFragment.class, HOME_TAB_TAG);
+        map.put(NewMeasurementFragment.class, HOME_TAB_TAG);
+        map.put(HistoryFragment.class, HISTORY_TAB_TAG);
+        map.put(SettingsFragment.class, SETTINGS_TAB_TAG);
+        map.put(ExtrasFragment.class, EXTRAS_TAB_TAG);
+        map.put(BTCommDebugFragment.class, COMM_TAB_TAG); // TODO: make debug fragments available through action bar on HOME tab
+        FRAGMENT_TO_TAB_MAP = Collections.unmodifiableMap(map);
+    }
+
     /*
        This map is used in order to map tab's tags into icons fot these tabs
     */

@@ -9,35 +9,25 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 /**
- * Default fragment shown for a HOME tab.
+ * Fragment shown for a new live measurement
  */
-public class HomeFragment extends Fragment {
+public class NewMeasurementFragment extends Fragment {
 
 
-    HomeFragmentCallback mCallback;
+    NewMeasurementFragmentCallback mCallback;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_new_measurement, container, false);
 
-        Button newMeasurementBtn = (Button) view.findViewById(R.id.new_measurement_btn);
+        Button startBtn = (Button) view.findViewById(R.id.start_btn);
 
-        newMeasurementBtn.setOnClickListener(new View.OnClickListener() {
+        startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mCallback.onNewMeasurementClick();
+                mCallback.startNewMeasurement();
             }
         });
-
-        Button syncBtn = (Button) view.findViewById(R.id.sync_btn);
-
-        syncBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mCallback.onSyncClick();
-            }
-        });
-
 
         return view;
     }
@@ -49,18 +39,17 @@ public class HomeFragment extends Fragment {
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception
         try {
-            mCallback = (HomeFragmentCallback) activity;
+            mCallback = (NewMeasurementFragmentCallback) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement HomeFragmentCallback");
+                    + " must implement NewMeasurementFragmentCallback");
         }
     }
 
 
     // Container Activity must implement this interface
-    public interface HomeFragmentCallback {
-        public void onNewMeasurementClick();
-        public void onSyncClick();
+    public interface NewMeasurementFragmentCallback {
+        public void startNewMeasurement();
     }
 
 }

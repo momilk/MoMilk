@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+
+        <Button
+            android:id="@+id/left_btn"
+            android:background="@drawable/round_button_selector"
+            android:text="@string/left_btn"
+            android:textSize="@dimen/left_right_button_text_size"
+            android:textStyle="bold"
+            android:textColor="@color/orangelight"
+            android:scaleType="fitCenter"
+            android:layout_width="@dimen/round_button_layout_size"
+            android:layout_height="@dimen/round_button_layout_size"
+            android:padding="20dp"/>
+
+        <Space
+            android:layout_width="40dp"
+            android:layout_height="match_parent"/>
+
+        <Button
+            android:id="@+id/right_btn"
+            android:background="@drawable/round_button_selector"
+            android:text="@string/right_btn"
+            android:textSize="@dimen/left_right_button_text_size"
+            android:textStyle="bold"
+            android:textColor="@color/orangelight"
+            android:scaleType="fitCenter"
+            android:layout_width="@dimen/round_button_layout_size"
+            android:layout_height="@dimen/round_button_layout_size"
+            android:padding="20dp"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/start_btn"
+            android:background="@drawable/round_button_selector"
+            android:text="@string/start_btn"
+            android:textSize="@dimen/start_button_text_size"
+            android:textStyle="bold"
+            android:textColor="@color/orangelight"
+            android:scaleType="fitCenter"
+            android:layout_width="@dimen/round_button_layout_size"
+            android:layout_height="@dimen/round_button_layout_size"
+            android:padding="20dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>

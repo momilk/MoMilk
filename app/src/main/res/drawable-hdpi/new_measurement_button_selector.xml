@@ -4,16 +4,16 @@
     <!--  Non focused states
      -->
     <item android:state_focused="false" android:state_selected="false" android:state_pressed="false"
-        android:drawable="@drawable/big_ring_button_unfocused" />
+        android:drawable="@drawable/new_measurement_button_unfocused" />
     <item android:state_focused="false" android:state_selected="true" android:state_pressed="false"
-        android:drawable="@drawable/big_ring_button_unfocused" />
+        android:drawable="@drawable/new_measurement_button_unfocused" />
     <!--  Focused states
      -->
     <item android:state_focused="true" android:state_selected="false" android:state_pressed="false"
-        android:drawable="@drawable/big_ring_button_unfocused" />
+        android:drawable="@drawable/new_measurement_button_focused" />
     <item android:state_focused="true" android:state_selected="true" android:state_pressed="false"
-        android:drawable="@drawable/big_ring_button_unfocused" />
+        android:drawable="@drawable/new_measurement_button_focused" />
     <!--  Pressed
      -->
-    <item android:state_pressed="true" android:drawable="@drawable/big_ring_button_unfocused" />
+    <item android:state_pressed="true" android:drawable="@drawable/new_measurement_button_pressed" />
 </selector>

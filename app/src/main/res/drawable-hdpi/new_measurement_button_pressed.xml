@@ -1,0 +1,25 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+<item>
+    <shape
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:shape="ring"
+        android:innerRadius="@dimen/new_measurement_button_external_inner_radius"
+        android:thickness="@dimen/new_measurement_button_external_thickness"
+        android:useLevel="false">
+        <solid android:color="@color/white" />
+
+    </shape>
+</item>
+<item>
+
+    <shape
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:shape="ring"
+        android:innerRadius="0dp"
+        android:thickness="@dimen/new_measurement_button_internal_thickness"
+        android:useLevel="false">
+        <solid android:color="@color/grey" />
+
+    </shape>
+</item>
+</layer-list>
