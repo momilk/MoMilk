@@ -82,9 +82,9 @@ public class Constants {
     static {
         Map<String, Integer> map = new HashMap<String, Integer>();
         map.put(HOME_TAB_TAG, R.drawable.ic_home_tab);
-        map.put(HISTORY_TAB_TAG, R.drawable.ic_home_tab);
-        map.put(SETTINGS_TAB_TAG, R.drawable.ic_home_tab);
-        map.put(EXTRAS_TAB_TAG, R.drawable.ic_home_tab);
+        map.put(HISTORY_TAB_TAG, R.drawable.ic_history_tab);
+        map.put(SETTINGS_TAB_TAG, R.drawable.ic_settings_tab);
+        map.put(EXTRAS_TAB_TAG, R.drawable.ic_extras_tab);
         map.put(COMM_TAB_TAG, R.drawable.ic_home_tab);
         map.put(CTRL_TAB_TAG, R.drawable.ic_home_tab);
         TAB_ICON_MAP = Collections.unmodifiableMap(map);

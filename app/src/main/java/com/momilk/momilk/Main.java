@@ -67,6 +67,11 @@ public class Main extends FragmentActivity implements
     // that have dependencies on either async events or user actions.
     private Stack<Integer> mRerunMethodStack;
 
+    // This variable will be set if there is need to switch a fragment when
+    // commiting FragmentTransaction will cause IllegalStateException due to state loss.
+    // If this variable is not null, then the fragment will be switched in onPostResume().
+    private Class<? extends Fragment> mNextFragmentClass = null;
+
 
     // The Handler that gets information back from the BluetoothService
     private final Handler mHandler = new Handler() {
@@ -217,7 +222,18 @@ public class Main extends FragmentActivity implements
     }
 
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
 
+        Log.d(LOG_TAG, "onPostResume() is called");
+
+        if (mNextFragmentClass != null) {
+            getFragment(mNextFragmentClass);
+            mNextFragmentClass = null;
+        }
+
+    }
 
     public void deviceSelected(final BluetoothDevice device) {
         Log.i(LOG_TAG, "deviceSelected is called on device: " + device.getName());
@@ -250,14 +266,24 @@ public class Main extends FragmentActivity implements
             case Constants.REQUEST_ENABLE_BT:
                 // When the request to enable Bluetooth returns
                 if (resultCode == Activity.RESULT_OK) {
+                    // Fragment transactions can't be executed from within onActivityResult,
+                    // therefore need to schedule it to be executed during onPostResume.
+                    scheduleFragmentChange(BTDevicesListFragment.class);
                     rerunMethod();
                 } else {
                     Toast.makeText(this, "Bluetooth is disabled - aborting", Toast.LENGTH_LONG).show();
-
                 }
             default:
                 break;
         }
+    }
+
+    private void scheduleFragmentChange(Class<? extends Fragment> claz) {
+        if (mNextFragmentClass != null) {
+            Log.e(LOG_TAG, "owerwriting mNextFragmentClass which is not null. Current: " +
+            mNextFragmentClass.getSimpleName() + " New: " + claz.getSimpleName());
+        }
+        mNextFragmentClass = claz;
     }
 
 
@@ -266,7 +292,7 @@ public class Main extends FragmentActivity implements
      */
     @SuppressWarnings("UnnecessaryBoxing")
     private void registerForRerun(int index) {
-        mRerunMethodStack.push(new Integer(index));
+        mRerunMethodStack.push(Integer.valueOf(index));
     }
 
 
@@ -619,8 +645,6 @@ public class Main extends FragmentActivity implements
 
         Log.i(LOG_TAG, "listBluetoothDevices is called!");
 
-        getFragment(BTDevicesListFragment.class);
-
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "Your device does not support bluetooth",
                     Toast.LENGTH_LONG).show();
@@ -631,11 +655,18 @@ public class Main extends FragmentActivity implements
 
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, Constants.REQUEST_ENABLE_BT);
-            //TODO: there is a potentially endless loop which ends only when the user
-            //TODO: enables BT. Check for the solution - the user should be
-            //TODO: prompted just once.
         }
         else {
+
+            // This check is required because this method might be rerun from onActivityResult - trying
+            // to execute any fragment transaction during onActivityResult results
+            // in a state loss and IllegalStateException.
+            // In case this method indeed rerun from onActivityResult, then the switching of the
+            // fragment will be handled in onPostResume().
+            if (mNextFragmentClass == null || !mNextFragmentClass.equals(BTDevicesListFragment.class)) {
+                getFragment(BTDevicesListFragment.class);
+            }
+
             if(mBluetoothAdapter.isDiscovering()) {
                 mBluetoothAdapter.cancelDiscovery();
             }
@@ -692,7 +723,6 @@ public class Main extends FragmentActivity implements
             registerForRerun(RERUN_ON_SYNC_CLICK);
             listBluetoothDevices();
         } else {
-            getFragment(HomeFragment.class);
             // Format the current date according to the decided format
             // TODO: make all this formatting stuff generic and maintainable
             SimpleDateFormat fmt = new SimpleDateFormat("'T@'HH'@'mm'@'ss'@'dd'@'MM'@'yyyy");
@@ -758,7 +788,7 @@ public class Main extends FragmentActivity implements
                     " any tab in Constants.FRAGMENT_TO_TAB_MAP");
             return null;
         }
-        mTabHost.setCurrentTabByTag(Constants.HOME_TAB_TAG);
+        mTabHost.setCurrentTabByTag(tabTag);
 
         FragmentContainer fc =
                 (FragmentContainer) getSupportFragmentManager().findFragmentById(android.R.id.tabcontent);
