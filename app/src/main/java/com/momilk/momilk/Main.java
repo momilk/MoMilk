@@ -260,6 +260,7 @@ public class Main extends FragmentActivity implements
             public void onClick(DialogInterface dialog, int which) {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
+                        getFragment(HomeFragment.class);
                         connectToDevice(device);
                         break;
 

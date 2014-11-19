@@ -15,4 +15,6 @@
     <dimen name="left_right_button_text_size">40sp</dimen>
     <dimen name="start_button_text_size">20sp</dimen>
     <dimen name="round_button_layout_size">130dp</dimen>
+    <dimen name="extras_fragment_image_margin">5dp</dimen>
+    <dimen name="extras_fragment_layout_padding">10dp</dimen>
 </resources>
