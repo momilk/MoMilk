@@ -55,6 +55,8 @@ public class Main extends FragmentActivity implements
 
     private BluetoothService mBluetoothService = null;
 
+    private SyncWithDeviceThread mSyncWithDeviceThread = null;
+
     private FragmentTabHost mTabHost;
     private HashMap<String, TabInfo> mMapTabInfo = new HashMap<String, TabInfo>();
     private TabInfo mCurrentTabInfo = null;
@@ -108,7 +110,11 @@ public class Main extends FragmentActivity implements
                                 (BTCommDebugFragment) getFragment(BTCommDebugFragment.class);
                         f.newMessage(readMessage);
                     } else {
-                        processNewMessage(readMessage);
+                        if (mSyncWithDeviceThread != null && mSyncWithDeviceThread.isAlive()) {
+                            mSyncWithDeviceThread.newIncomingMessage(readMessage);
+                        } else {
+                            Log.e(LOG_TAG, "Incoming message wasn't utilized!");
+                        }
                     }
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
@@ -118,8 +124,18 @@ public class Main extends FragmentActivity implements
                             + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
                     break;
                 case Constants.MESSAGE_TOAST:
-                    Toast.makeText(getApplicationContext(), msg.getData().getString(Constants.TOAST),
-                            Toast.LENGTH_SHORT).show();
+                    final Toast toast = Toast.makeText(getApplicationContext(), msg.getData().getString(Constants.TOAST),
+                            Toast.LENGTH_SHORT);
+                    toast.show();
+
+                    // Just dirty workaround to show a longer toast
+                    new CountDownTimer(3000, 1000)
+                    {
+
+                        public void onTick(long millisUntilFinished) {toast.show();}
+                        public void onFinish() {toast.show();}
+
+                    }.start();
                     break;
             }
         }
@@ -558,61 +574,6 @@ public class Main extends FragmentActivity implements
     }
 
 
-    private void processNewMessage(String message) {
-        try {
-            // TODO: implement all this stuff in a more general and maintainable state
-            String[] parts = message.split("@");
-            SimpleDateFormat fmt = new SimpleDateFormat("'W'HHmmssddMMyyyy");
-            // TODO: there is bug here - it will output incorrect date if the original message contain single number values (like 1@1@1970)
-            Date date = fmt.parse(parts[0] + parts[3] + parts[4] + parts[5] +parts[6] +
-            parts[7] + parts[8]);
-
-            fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            String formattedDate = fmt.format(date);
-
-            String index = parts[1];
-            String leftOrRight = parts[2];
-            String duration = parts[9];
-            String amount = parts[10];
-            String deltaRoll = parts[10];
-            String deltaTilt = parts[11];
-
-            final Toast summary = Toast.makeText(this, "Date: " + formattedDate +
-                    "\nIndex: " + index +"\nL/R: " + leftOrRight +
-                    "\nDuration: " + duration + "\nAmount: " + amount +
-                    "\n\u0394Roll: " + deltaRoll + "\n\u0394Tilt: " + deltaTilt,
-                    Toast.LENGTH_SHORT);
-            summary.show();
-
-            // Just dirty workaround to show a longer toast
-            new CountDownTimer(5000, 1000)
-            {
-
-                public void onTick(long millisUntilFinished) {summary.show();}
-                public void onFinish() {summary.show();}
-
-            }.start();
-
-            if (mDBAdapter.insertData(index, leftOrRight, formattedDate,
-                    duration, amount, deltaRoll, deltaTilt) < 0) {
-                Log.e(LOG_TAG, "insertData failed!");
-            }
-
-
-        } catch(ParseException e) {
-            Log.w(LOG_TAG, "Got a message of unknown format: " + message);
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        } catch (IndexOutOfBoundsException e) {
-            Log.w(LOG_TAG, "Got a message of unknown format: " + message);
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        } catch (NullPointerException e) {
-            Log.w(LOG_TAG, "Got a message of unknown format: " + message);
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        }
-
-
-    }
-
 
 
     private void setupBluetoothService() {
@@ -723,12 +684,20 @@ public class Main extends FragmentActivity implements
             registerForRerun(RERUN_ON_SYNC_CLICK);
             listBluetoothDevices();
         } else {
-            // Format the current date according to the decided format
-            // TODO: make all this formatting stuff generic and maintainable
-            SimpleDateFormat fmt = new SimpleDateFormat("'T@'HH'@'mm'@'ss'@'dd'@'MM'@'yyyy");
-            String dateMessage = fmt.format(new Date(System.currentTimeMillis()));
-            Log.i(LOG_TAG, "sending the date as: " + dateMessage);
-            sendMessage(dateMessage);
+            if (mSyncWithDeviceThread != null) {
+                // Ensure that the existing thread is cancelled
+                mSyncWithDeviceThread.cancel();
+                try {
+                    mSyncWithDeviceThread.join();
+                } catch (InterruptedException e) {
+                    // Currently there is no use case when the main thread is being interrupted,
+                    // but just as a precaution...
+                    Thread.currentThread().interrupt();
+                }
+            }
+
+            mSyncWithDeviceThread = new SyncWithDeviceThread(this, mBluetoothService, mDBAdapter, mHandler);
+            mSyncWithDeviceThread.start();
         }
 
     }

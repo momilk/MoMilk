@@ -23,8 +23,8 @@ public class CustomDatabaseAdapter {
     }
 
 
-    public long insertData(String index, String leftOrRight, String date, String duration,
-                           String amount, String delta_roll, String delta_tilt) {
+    public synchronized long insertData(int index, String leftOrRight, String date, int duration,
+                           int amount, int delta_roll, int delta_tilt) {
 
         SQLiteDatabase db = mHelper.getWritableDatabase();
 
@@ -41,21 +41,21 @@ public class CustomDatabaseAdapter {
         return id;
     }
 
-    public ArrayList<HistoryFragment.HistoryEntry> getDayHistory() {
+    public synchronized ArrayList<HistoryFragment.HistoryEntry> getDayHistory() {
         return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 days')");
     }
 
 
-    public ArrayList<HistoryFragment.HistoryEntry> getWeekHistory() {
+    public synchronized ArrayList<HistoryFragment.HistoryEntry> getWeekHistory() {
         return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-7 days')");
     }
 
 
-    public ArrayList<HistoryFragment.HistoryEntry> getMonthHistory() {
+    public synchronized ArrayList<HistoryFragment.HistoryEntry> getMonthHistory() {
         return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 month')");
     }
 
-    private ArrayList<HistoryFragment.HistoryEntry> getHistory(String selection) {
+    private synchronized ArrayList<HistoryFragment.HistoryEntry> getHistory(String selection) {
         SQLiteDatabase db = mHelper.getReadableDatabase();
 
         String[] columns = {CustomSQLOpenHelper.UID, CustomSQLOpenHelper.LEFT_OR_RIGHT,
@@ -94,7 +94,7 @@ public class CustomDatabaseAdapter {
         return history;
     }
 
-    public void clearTable() {
+    public synchronized void clearTable() {
         mHelper.clearTable(CustomSQLOpenHelper.TABLE_NAME);
     }
 
