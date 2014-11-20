@@ -105,6 +105,8 @@ public class Main extends FragmentActivity implements
                     break;
                 case Constants.MESSAGE_READ:
                     String readMessage = (String) msg.obj;
+
+                    Toast.makeText(getApplicationContext(), readMessage, Toast.LENGTH_LONG).show();
                     if (BT_DEBUG_LAYOUT) {
                         BTCommDebugFragment f =
                                 (BTCommDebugFragment) getFragment(BTCommDebugFragment.class);
