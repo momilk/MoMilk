@@ -1,10 +1,14 @@
 package com.momilk.momilk;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,11 +30,38 @@ public class HistoryFragment extends Fragment{
 
     private static final String LOG_TAG = "HistoryFragment";
 
+    private static final int SHOW_DAY = 0;
+    private static final int SHOW_WEEK = 1;
+    private static final int SHOW_MONTH = 2;
+
     private HistoryFragmentCallback mCallback;
     private HistoryArrayAdapter mAdapter;
+    private int mShownState;
     private Button mShowDayHistoryBtn;
     private Button mShowWeekHistoryBtn;
     private Button mShowMonthHistoryBtn;
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Constants.ACTION_NOTIFY_DB_CHANGED)) {
+                Log.d(LOG_TAG, "Got a broadcast intent: " + intent.getAction());
+                switch (mShownState) {
+                    case SHOW_DAY:
+                        showDayHistory();
+                        break;
+                    case SHOW_WEEK:
+                        showWeekHistory();
+                        break;
+                    case SHOW_MONTH:
+                        showMonthHistory();
+                        break;
+                    default:
+                        showDayHistory();
+                }
+            }
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,15 +92,6 @@ public class HistoryFragment extends Fragment{
             }
         });
 
-
-        Button clearTableBtn = (Button) view.findViewById(R.id.clear_table_btn);
-        clearTableBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                clearTable();
-            }
-        });
-
         ListView historyList = (ListView) view.findViewById(R.id.history_list);
 
         TextView emptyText = (TextView)view.findViewById(android.R.id.empty);
@@ -77,6 +99,9 @@ public class HistoryFragment extends Fragment{
 
         mAdapter = new HistoryArrayAdapter(getActivity(), R.layout.history_item_row);
         historyList.setAdapter(mAdapter);
+
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
+                new IntentFilter(Constants.ACTION_NOTIFY_DB_CHANGED));
 
         showDayHistory();
 
@@ -110,6 +135,8 @@ public class HistoryFragment extends Fragment{
         mAdapter.clear();
         mAdapter.addAll(history);
         mAdapter.notifyDataSetChanged();
+
+        mShownState = SHOW_DAY;
     }
 
 
@@ -123,6 +150,8 @@ public class HistoryFragment extends Fragment{
         mAdapter.clear();
         mAdapter.addAll(history);
         mAdapter.notifyDataSetChanged();
+
+        mShownState = SHOW_WEEK;
     }
 
 
@@ -136,11 +165,8 @@ public class HistoryFragment extends Fragment{
         mAdapter.clear();
         mAdapter.addAll(history);
         mAdapter.notifyDataSetChanged();
-    }
 
-    private void clearTable() {
-        mCallback.getHistoryDatabaseAdapter().clearTable();
-        showDayHistory();
+        mShownState = SHOW_MONTH;
     }
 
 

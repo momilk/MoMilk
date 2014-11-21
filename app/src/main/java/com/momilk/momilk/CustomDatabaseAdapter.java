@@ -3,10 +3,12 @@ package com.momilk.momilk;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -14,11 +16,16 @@ import java.util.ArrayList;
 
 public class CustomDatabaseAdapter {
 
+
     private static final String LOG_TAG = "CustomDatabaseAdapter";
 
+
+    private Context mContext;
     private CustomSQLOpenHelper mHelper;
 
+
     public CustomDatabaseAdapter(Context context) {
+        mContext = context;
         mHelper = new CustomSQLOpenHelper(context);
     }
 
@@ -38,6 +45,9 @@ public class CustomDatabaseAdapter {
         contentValues.put(CustomSQLOpenHelper.DELTA_TILT, delta_tilt);
 
         long id = db.insert(CustomSQLOpenHelper.TABLE_NAME, null, contentValues);
+        if(id >= 0) {
+            notifyDataChanged();
+        }
         return id;
     }
 
@@ -95,7 +105,13 @@ public class CustomDatabaseAdapter {
     }
 
     public synchronized void clearTable() {
-        mHelper.clearTable(CustomSQLOpenHelper.TABLE_NAME);
+        mHelper.clearTable();
+        notifyDataChanged();
+    }
+
+    private void notifyDataChanged() {
+        Intent intent = new Intent(Constants.ACTION_NOTIFY_DB_CHANGED);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
     static class CustomSQLOpenHelper extends SQLiteOpenHelper {
@@ -153,10 +169,10 @@ public class CustomDatabaseAdapter {
             }
         }
 
-        public void clearTable(String tableName) {
-            Log.i(LOG_TAG, "clearTable was called for table: " + tableName);
+        public void clearTable() {
+            Log.d(LOG_TAG, "Clearing the table: " + TABLE_NAME);
             SQLiteDatabase db = getWritableDatabase();
-            db.execSQL("DROP TABLE IF EXISTS " + tableName);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
             db.execSQL(CREATE_TABLE);
         }
 

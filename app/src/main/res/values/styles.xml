@@ -1,12 +1,11 @@
 <resources>
 
-    <style name="AppTheme" parent="android:Theme.Holo.Light">
+    <style name="AppTheme" parent="android:Theme.DeviceDefault">
 
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
 
         <item name="android:textColor">@color/orangelight</item>
-        <item name="android:background">@color/background</item>
     </style>
 
 

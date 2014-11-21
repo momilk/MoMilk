@@ -1,5 +1,6 @@
 package com.momilk.momilk;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -20,15 +21,15 @@ import android.support.v4.app.FragmentTabHost;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TabHost;
 import android.widget.Toast;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -40,8 +41,8 @@ public class Main extends FragmentActivity implements
         ExtrasFragment.ExtrasFragmentCallback,
         NewMeasurementFragment.NewMeasurementFragmentCallback {
 
-    // Set this to true in order to load a very simple layout for debug of bluetooth connection
-    private static final boolean BT_DEBUG_LAYOUT = false;
+    // Set this to true in order access various debug features of the app (through ActionBar)
+    private static final boolean ENABLE_DEBUG = false;
 
 
 
@@ -56,6 +57,8 @@ public class Main extends FragmentActivity implements
     private BluetoothService mBluetoothService = null;
 
     private SyncWithDeviceThread mSyncWithDeviceThread = null;
+
+    private String[] mCurrentTabsGroup;
 
     private FragmentTabHost mTabHost;
     private HashMap<String, TabInfo> mMapTabInfo = new HashMap<String, TabInfo>();
@@ -84,11 +87,7 @@ public class Main extends FragmentActivity implements
                     switch (msg.arg1) {
                         case BluetoothService.STATE_CONNECTED:
                             //setStatus("Connected to: " + mConnectedDeviceName);
-                            if (BT_DEBUG_LAYOUT) {
-                                getFragment(BTCommDebugFragment.class);
-                            } else {
                                 rerunMethod();
-                            }
                             break;
                         case BluetoothService.STATE_CONNECTING:
                             //setStatus("Connecting...");
@@ -101,22 +100,17 @@ public class Main extends FragmentActivity implements
                     break;
                 case Constants.MESSAGE_WRITE:
                     @SuppressWarnings("UnusedDeclaration") // This might come in handy at some point
-                    String writeMessage = (String) msg.obj;
+                            String writeMessage = (String) msg.obj;
                     break;
                 case Constants.MESSAGE_READ:
                     String readMessage = (String) msg.obj;
 
                     Toast.makeText(getApplicationContext(), readMessage, Toast.LENGTH_LONG).show();
-                    if (BT_DEBUG_LAYOUT) {
-                        BTCommDebugFragment f =
-                                (BTCommDebugFragment) getFragment(BTCommDebugFragment.class);
-                        f.newMessage(readMessage);
+
+                    if (mSyncWithDeviceThread != null && mSyncWithDeviceThread.isAlive()) {
+                        mSyncWithDeviceThread.newIncomingMessage(readMessage);
                     } else {
-                        if (mSyncWithDeviceThread != null && mSyncWithDeviceThread.isAlive()) {
-                            mSyncWithDeviceThread.newIncomingMessage(readMessage);
-                        } else {
-                            Log.e(LOG_TAG, "Incoming message wasn't utilized!");
-                        }
+                        Log.e(LOG_TAG, "Incoming message wasn't utilized!");
                     }
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
@@ -177,7 +171,8 @@ public class Main extends FragmentActivity implements
         initializeTabHost(savedInstanceState);
 
         if (savedInstanceState != null) {
-            mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab")); //set the tab as per the saved state
+            //set the tab as per the saved state
+            mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));
         }
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -185,6 +180,13 @@ public class Main extends FragmentActivity implements
         mDBAdapter = new CustomDatabaseAdapter(this);
 
         mRerunMethodStack = new Stack<Integer>();
+
+        if (ENABLE_DEBUG) {
+            ActionBar actionBar= getActionBar();
+            if (actionBar != null) {
+                actionBar.show();
+            }
+        }
     }
 
 
@@ -239,6 +241,25 @@ public class Main extends FragmentActivity implements
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (ENABLE_DEBUG) {
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(R.menu.main_activity_actions, menu);
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_clear_all_measurements:
+                mDBAdapter.clearTable();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
     @Override
     protected void onPostResume() {
@@ -341,88 +362,60 @@ public class Main extends FragmentActivity implements
     //
     // -------------------------------------------------------------------------------------------
 
-    /*
-    This private class is used to store information about tabs.
-    */
-    private class TabInfo {
-        private String mTag;
-        private Class mClass;
-        private int mIconId;
-
-        @SuppressWarnings("UnusedDeclaration") // Keep it just in case
-        private Bundle mArgs;
-
-        private FragmentContainer mFragmentContainer;
-
-        TabInfo(String tag, Bundle args) {
-            mTag = tag;
-            mClass = Constants.DEFAULT_TAB_FRAGMENT_MAP.get(tag);
-            mIconId = Constants.TAB_ICON_MAP.get(tag);
-            mArgs = args;
-        }
-
-    }
-
-    class TabFactory implements TabHost.TabContentFactory {
-
-        private final Context mContext;
-
-        public TabFactory(Context context) {
-            mContext = context;
-        }
-
-        /*
-        This method creates an empty view as a placeholder for a fragment
-         */
-        public View createTabContent(String tag) {
-            View v = new View(mContext);
-            v.setMinimumWidth(0);
-            v.setMinimumHeight(0);
-            return v;
-        }
-
-    }
 
 
     private void initializeTabHost(Bundle args) {
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
-        TabInfo tabInfo;
-        Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.HOME_TAB_TAG),
-                tabInfo = new TabInfo(Constants.HOME_TAB_TAG, args));
-        mMapTabInfo.put(tabInfo.mTag, tabInfo);
-        Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.SETTINGS_TAB_TAG),
-                tabInfo = new TabInfo(Constants.SETTINGS_TAB_TAG, args));
-        mMapTabInfo.put(tabInfo.mTag, tabInfo);
-        Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.HISTORY_TAB_TAG),
-                tabInfo = new TabInfo(Constants.HISTORY_TAB_TAG, args));
-        mMapTabInfo.put(tabInfo.mTag, tabInfo);
-        Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.EXTRAS_TAB_TAG),
-                tabInfo = new TabInfo(Constants.EXTRAS_TAB_TAG, args));
-        mMapTabInfo.put(tabInfo.mTag, tabInfo);
 
-
-        if (BT_DEBUG_LAYOUT) {
-
-            // TODO: remove this part and implement debug features via action bar visibility
-            // This tab is used for BT debug
-            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.CTRL_TAB_TAG),
-                    tabInfo = new TabInfo(Constants.CTRL_TAB_TAG, args));
-            mMapTabInfo.put(tabInfo.mTag, tabInfo);
-
-            // TODO: remove this part and implement debug features via action bar visibility
-            // This tab is used for BT debug
-            Main.addTab(this, mTabHost, mTabHost.newTabSpec(Constants.COMM_TAB_TAG),
-                    tabInfo = new TabInfo(Constants.COMM_TAB_TAG, args));
-            mMapTabInfo.put(tabInfo.mTag, tabInfo);
+        // Create TabInfo's for all tabs
+        for (String tabTag : Constants.DEFAULT_TAB_FRAGMENT_MAP.keySet()) {
+            mMapTabInfo.put(tabTag, new TabInfo(tabTag, args));
         }
-
-        addTabSpecificListeners();
 
         // Default to home tab
         onTabChanged(Constants.HOME_TAB_TAG);
 
         mTabHost.setOnTabChangedListener(this);
+    }
+
+    /*
+    This metod clears the tabs host from all the tabs and then adds the tabs specified in
+    input array
+     */
+    private void setTabsByGroup(String[] tabsGroup, Bundle args) {
+
+
+        if (mCurrentTabsGroup != null && mCurrentTabsGroup == tabsGroup) {
+            // The currently shown tab group is the same as the requested one
+            return;
+        }
+
+        mCurrentTabsGroup = tabsGroup;
+
+        // clearAllTabs does not work if the current tab is not set to 0 - this is a known
+        // bug which has not been fixed for years.
+        // Bug ticket: https://code.google.com/p/android/issues/detail?id=2772
+        //
+        // Just setting the tab to HOME works, but shows the home fragment for a fraction of
+        // the second during the change, which is really annoying.
+        // In order to prevent this, show the empty fragment first (which will also set
+        // the current tab to 0 - HOME)
+        if (mTabHost.getTabWidget().getChildCount() > 0) {
+            getFragment(EmptyFragment.class);
+            mTabHost.clearAllTabs();
+        }
+
+
+        for (String tabTag : tabsGroup) {
+            Main.addTab(this, mTabHost, mTabHost.newTabSpec(tabTag), mMapTabInfo.get(tabTag));
+        }
+
+
+        // Since all the tabs got replaced - need to restore the currently selected tab
+        mTabHost.setCurrentTabByTag(mCurrentTabInfo.mTag);
+
+        addTabSpecificListeners();
     }
 
 
@@ -490,41 +483,76 @@ public class Main extends FragmentActivity implements
     }
 
 
-
+    /**
+     * This callback contains tab changing logic. Please note that this callback is not expected to
+     * handle clicks on already selected tabs.
+     * @param tag
+     */
     @Override
     public void onTabChanged(String tag) {
         TabInfo newTabInfo = (TabInfo) mMapTabInfo.get(tag);
+
+        // When the user clicks on HISTORY tab, he is automatically redirected to HISTORY_LIST tab
+        if (newTabInfo.mTag.equals(Constants.HISTORY_TAB_TAG)) {
+            onTabChanged(Constants.HISTORY_LIST_TAB_TAG);
+            return;
+        }
+
+
         if (mCurrentTabInfo != newTabInfo) {
+            // During execution of this method (and methods called from it) there will be tabs
+            // switching, but we don't want onTabChanged to be called again as a result of these
+            // switches. Unregister now and register back at the end of the method
+            mTabHost.setOnTabChangedListener(null);
+
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+
             if (mCurrentTabInfo != null) {
                 if (mCurrentTabInfo.mFragmentContainer != null) {
                     ft.detach(mCurrentTabInfo.mFragmentContainer);
                 }
             }
-            if (newTabInfo != null) {
-                if (newTabInfo.mFragmentContainer == null) {
-                    Log.d(LOG_TAG, "creating new FragmentContainer for " + newTabInfo.mClass.getSimpleName());
-                    newTabInfo.mFragmentContainer = FragmentContainer.newInstance(newTabInfo.mClass.getName());
-                    ft.add(android.R.id.tabcontent, newTabInfo.mFragmentContainer, newTabInfo.mTag);
-                } else {
-                    Log.d(LOG_TAG, "attaching existing FragmentContainer for " + newTabInfo.mClass.getSimpleName());
-                    ft.attach(newTabInfo.mFragmentContainer);
-                }
-            }
 
             mCurrentTabInfo = newTabInfo;
+
+            // Choose tabs to be shown
+            String[] tabsGroup;
+            if (newTabInfo.mTag.equals(Constants.HISTORY_TAB_TAG) ||
+                    newTabInfo.mTag.equals(Constants.HISTORY_LIST_TAB_TAG) ||
+                    newTabInfo.mTag.equals(Constants.HISTORY_CLOCK_TAB_TAG)) {
+                tabsGroup = Constants.HISTORY_TABS_GROUP;
+            } else {
+                tabsGroup = Constants.DEFAULT_TABS_GROUP;
+            }
+
+            // Show the chosen tabs
+            setTabsByGroup(tabsGroup, null);
+
+            // Highlight the current tab
+            refreshTabBackgrounds();
+
+            // Create a FragmentContainer for the tab or attach the existing one
+            if (newTabInfo.mFragmentContainer == null) {
+                Log.d(LOG_TAG, "creating new FragmentContainer for " + newTabInfo.mClass.getSimpleName());
+                newTabInfo.mFragmentContainer = FragmentContainer.newInstance(newTabInfo.mClass.getName());
+                ft.add(android.R.id.tabcontent, newTabInfo.mFragmentContainer, newTabInfo.mTag);
+            } else {
+                Log.d(LOG_TAG, "attaching existing FragmentContainer for " + newTabInfo.mClass.getSimpleName());
+                ft.attach(newTabInfo.mFragmentContainer);
+            }
+
             ft.commit();
             this.getSupportFragmentManager().executePendingTransactions();
 
-        }
 
-        if (newTabInfo != null) {
+
+            // Set default content for the Fragment container
             newTabInfo.mFragmentContainer.setDefaultContent(null);
-        } else {
-            Log.e(LOG_TAG, "newTabInfo is null!");
-        }
 
-        refreshTabBackgrounds();
+            // Set the listener back
+            mTabHost.setOnTabChangedListener(this);
+
+        }
     }
 
     private void refreshTabBackgrounds() {
@@ -746,21 +774,25 @@ public class Main extends FragmentActivity implements
 
     // -------------------------------------------------------------------------------------------
     //
-    // Methods used for debug
+    // Method for switching fragments and tabs
     //
     // -------------------------------------------------------------------------------------------
 
-    // TODO: replace all get...Fragment methods with a single generic method
 
     private Fragment getFragment(Class fragmentClass) {
+
+        // Get the tab in which this fragment should be shown
         String tabTag = Constants.FRAGMENT_TO_TAB_MAP.get(fragmentClass);
 
         if (tabTag == null) {
             Log.e(LOG_TAG, "Fragment " + fragmentClass.getSimpleName() + " is not mapped to" +
                     " any tab in Constants.FRAGMENT_TO_TAB_MAP");
-            return null;
         }
-        mTabHost.setCurrentTabByTag(tabTag);
+
+        // Switch tab if needed
+        if (mCurrentTabInfo == null || !mCurrentTabInfo.mTag.equals(tabTag)) {
+            mTabHost.setCurrentTabByTag(tabTag);
+        }
 
         FragmentContainer fc =
                 (FragmentContainer) getSupportFragmentManager().findFragmentById(android.R.id.tabcontent);
@@ -772,67 +804,57 @@ public class Main extends FragmentActivity implements
         return fc.replaceContent(fragmentClass, null);
 
     }
-//
-//    private BTDevicesListFragment getDevicesListFragment() {
-//
-//        mTabHost.setCurrentTabByTag(Constants.HOME_TAB_TAG);
-//
-//        FragmentContainer fc =
-//                (FragmentContainer) getSupportFragmentManager().findFragmentById(android.R.id.tabcontent);
-//
-//        if (fc == null) {
-//            Log.e(LOG_TAG, "FragmentContainer for the current tab is null");
-//        }
-//        return (BTDevicesListFragment) fc.replaceContent(BTDevicesListFragment.class, null);
-//    }
-//
-//
-//    private BTCommDebugFragment getCommunicationFragment() {
-//
-//        mTabHost.setCurrentTabByTag("comm");
-//
-//        FragmentContainer fc =
-//                (FragmentContainer) getSupportFragmentManager().findFragmentById(android.R.id.tabcontent);
-//
-//        if (fc == null) {
-//            Log.e(LOG_TAG, "FragmentContainer for the current tab is null");
-//        }
-//        return (BTCommDebugFragment) fc.replaceContent(BTCommDebugFragment.class, null);
-//
-//    }
-//
-//
-//    private HomeFragment getHomeFragment() {
-//
-//        mTabHost.setCurrentTabByTag(Constants.HOME_TAB_TAG);
-//
-//        FragmentContainer fc =
-//                (FragmentContainer) getSupportFragmentManager().findFragmentById(android.R.id.tabcontent);
-//
-//        if (fc == null) {
-//            Log.e(LOG_TAG, "FragmentContainer for the current tab is null");
-//        }
-//
-//        return (HomeFragment) fc.replaceContent(HomeFragment.class, null);
-//
-//    }
-//
-//
-//
-//
-//    private HistoryFragment getHistoryFragment() {
-//
-//        mTabHost.setCurrentTabByTag(Constants.HISTORY_TAB_TAG);
-//
-//        FragmentContainer fc =
-//                (FragmentContainer) getSupportFragmentManager().findFragmentById(android.R.id.tabcontent);
-//
-//        if (fc == null) {
-//            Log.e(LOG_TAG, "FragmentContainer for the current tab is null");
-//        }
-//
-//        return (HistoryFragment) fc.replaceContent(HistoryFragment.class, null);
-//
-//    }
+
+
+    // -------------------------------------------------------------------------------------------
+    //
+    // Inner classes
+    //
+    // -------------------------------------------------------------------------------------------
+
+
+    /*
+    This private class is used to store information about tabs.
+    */
+    private class TabInfo {
+        private String mTag;
+        private Class mClass;
+        private int mIconId;
+
+        @SuppressWarnings("UnusedDeclaration") // Keep it just in case
+        private Bundle mArgs;
+
+        private FragmentContainer mFragmentContainer;
+
+        TabInfo(String tag, Bundle args) {
+            mTag = tag;
+            mClass = Constants.DEFAULT_TAB_FRAGMENT_MAP.get(tag);
+            mIconId = Constants.TAB_ICON_MAP.get(tag);
+            mArgs = args;
+        }
+
+    }
+
+    class TabFactory implements TabHost.TabContentFactory {
+
+        private final Context mContext;
+
+        public TabFactory(Context context) {
+            mContext = context;
+        }
+
+        /*
+        This method creates an empty view as a placeholder for a fragment
+         */
+        public View createTabContent(String tag) {
+            View v = new View(mContext);
+            v.setMinimumWidth(0);
+            v.setMinimumHeight(0);
+            return v;
+        }
+
+    }
+
+
 
 }

@@ -21,5 +21,6 @@
     <string name="start_btn">START</string>
     <string name="stop_btn">STOP</string>
     <string name="empty_list_txt">No measurements yet</string>
+    <string name="action_clear_all_measurements">Clear all measurements</string>
 
 </resources>

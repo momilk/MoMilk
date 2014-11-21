@@ -66,23 +66,4 @@
 
     </LinearLayout>
 
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:layout_gravity="center"
-        android:gravity="center">
-
-        <Button
-            android:id="@+id/clear_table_btn"
-            android:text="Clear table"
-            android:background="@drawable/rectangle_button_selector"
-            android:layout_width="150dp"
-            android:layout_height="30dp" />
-
-
-    </LinearLayout>
-
 </LinearLayout>
