@@ -13,7 +13,16 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
+/**
+ *
+ */
 
+/*
+ * TODO: improve the efficiency of DB management
+ * The implementation of DB management is wasteful - every request is translated into request
+ * to DB. This might be easily improved. For example: cache the returned data for month and reuse
+ * this cache when returning history for day/week.
+ */
 public class CustomDatabaseAdapter {
 
 

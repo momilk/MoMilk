@@ -1,7 +1,7 @@
 <resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <dimen name="fragment_default_padding">12dp</dimen>
     <dimen name="button_corner_radius">12dp</dimen>
     <dimen name="sync_button_external_inner_radius">45dp</dimen>
     <dimen name="sync_button_external_thickness">5dp</dimen>
@@ -17,4 +17,6 @@
     <dimen name="round_button_layout_size">130dp</dimen>
     <dimen name="extras_fragment_image_margin">5dp</dimen>
     <dimen name="extras_fragment_layout_padding">10dp</dimen>
+    <dimen name="history_period_btn_height">35dp</dimen>
+    <dimen name="history_period_btn_width">75dp</dimen>
 </resources>

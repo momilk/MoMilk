@@ -9,14 +9,15 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3"
+        android:layout_weight="6"
         android:orientation="vertical"
-        android:gravity="center">
+        android:gravity="center"
+        android:padding="@dimen/fragment_default_padding">
 
         <ListView
             android:id="@+id/history_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@android:id/empty"
@@ -36,33 +37,59 @@
         android:gravity="center">
 
         <Button
+            android:id="@+id/show_last_history_btn"
+            android:text="Last feeding"
+            android:textColor="@color/textcolor"
+            android:textStyle="bold"
+            android:background="@drawable/rectangle_button_selector"
+            android:layout_width="150dp"
+            android:layout_height="@dimen/history_period_btn_height" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:gravity="center">
+
+        <Button
             android:id="@+id/show_day_history_btn"
             android:text="Day"
+            android:textColor="@color/textcolor"
+            android:textStyle="bold"
             android:background="@drawable/rectangle_button_selector"
-            android:layout_width="70dp"
-            android:layout_height="30dp" />
+            android:layout_width="@dimen/history_period_btn_width"
+            android:layout_height="@dimen/history_period_btn_height" />
 
         <Space
-            android:layout_width="20dp"
+            android:layout_width="15dp"
             android:layout_height="match_parent" />
 
         <Button
             android:id="@+id/show_week_history_btn"
             android:text="Week"
+            android:textColor="@color/textcolor"
+            android:textStyle="bold"
             android:background="@drawable/rectangle_button_selector"
-            android:layout_width="70dp"
-            android:layout_height="30dp" />
+            android:layout_width="@dimen/history_period_btn_width"
+            android:layout_height="@dimen/history_period_btn_height" />
 
         <Space
-            android:layout_width="20dp"
+            android:layout_width="15dp"
             android:layout_height="match_parent" />
 
         <Button
             android:id="@+id/show_month_history_btn"
             android:text="Month"
+            android:textColor="@color/textcolor"
+            android:textStyle="bold"
             android:background="@drawable/rectangle_button_selector"
-            android:layout_width="70dp"
-            android:layout_height="30dp" />
+            android:layout_width="@dimen/history_period_btn_width"
+            android:layout_height="@dimen/history_period_btn_height" />
 
     </LinearLayout>
 

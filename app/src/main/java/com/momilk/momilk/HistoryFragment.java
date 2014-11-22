@@ -30,9 +30,10 @@ public class HistoryFragment extends Fragment{
 
     private static final String LOG_TAG = "HistoryFragment";
 
-    private static final int SHOW_DAY = 0;
-    private static final int SHOW_WEEK = 1;
-    private static final int SHOW_MONTH = 2;
+    private static final int SHOW_LAST = 0;
+    private static final int SHOW_DAY = 1;
+    private static final int SHOW_WEEK = 2;
+    private static final int SHOW_MONTH = 3;
 
     private HistoryFragmentCallback mCallback;
     private HistoryArrayAdapter mAdapter;
@@ -47,6 +48,9 @@ public class HistoryFragment extends Fragment{
             if (intent.getAction().equals(Constants.ACTION_NOTIFY_DB_CHANGED)) {
                 Log.d(LOG_TAG, "Got a broadcast intent: " + intent.getAction());
                 switch (mShownState) {
+                    case SHOW_LAST:
+                        showLastHistory();
+                        break;
                     case SHOW_DAY:
                         showDayHistory();
                         break;
@@ -125,6 +129,19 @@ public class HistoryFragment extends Fragment{
     }
 
 
+    public void showLastHistory() {
+
+        mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
+        mShowWeekHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
+        mShowMonthHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
+
+        ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getDayHistory();
+        mAdapter.clear();
+        mAdapter.addAll(history);
+        mAdapter.notifyDataSetChanged();
+
+        mShownState = SHOW_DAY;
+    }
     public void showDayHistory() {
 
         mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
@@ -256,13 +273,10 @@ public class HistoryFragment extends Fragment{
         private ArrayList<HistoryEntry> mHistory;
 
         private class ViewHolder {
-            TextView idTxt;
-            TextView leftOrRightTxt;
             TextView dateTxt;
-            TextView durationTxt;
+            TextView leftOrRightTxt;
             TextView amountTxt;
-            TextView deltaRollTxt;
-            TextView deltaTiltTxt;
+            TextView durationTxt;
         }
 
         public HistoryArrayAdapter(Context context, int resource) {
@@ -288,12 +302,10 @@ public class HistoryFragment extends Fragment{
                 convertView = vi.inflate(R.layout.history_item_row, null);
 
                 viewHolder = new ViewHolder();
-                viewHolder.idTxt = (TextView) convertView.findViewById(R.id.id_txt);
                 viewHolder.dateTxt = (TextView) convertView.findViewById(R.id.date_txt);
                 viewHolder.durationTxt = (TextView) convertView.findViewById(R.id.duration_txt);
                 viewHolder.amountTxt = (TextView) convertView.findViewById(R.id.amount_txt);
-                viewHolder.deltaRollTxt = (TextView) convertView.findViewById(R.id.delta_roll_txt);
-                viewHolder.deltaTiltTxt = (TextView) convertView.findViewById(R.id.delta_tilt_txt);
+                viewHolder.leftOrRightTxt = (TextView) convertView.findViewById(R.id.left_or_right_txt);
 
                 convertView.setTag(viewHolder);
             } else {
@@ -303,18 +315,17 @@ public class HistoryFragment extends Fragment{
             HistoryEntry entry = mHistory.get(position);
 
             if (entry != null) {
-                viewHolder.idTxt.setText(Integer.toString(entry.getUid()));
-                viewHolder.dateTxt.setText("Date: " + entry.getDate());
-                viewHolder.durationTxt.setText("Duration: " + Integer.toString(entry.getDuration()));
-                viewHolder.amountTxt.setText("Amount: " + Integer.toString(entry.getAmount()));
-                viewHolder.deltaRollTxt.setText("\u0394Roll: " + Integer.toString(entry.getDeltaRoll()));
-                viewHolder.deltaTiltTxt.setText("\u0394Tilt: " + Integer.toString(entry.getDeltaTilt()));
+                viewHolder.dateTxt.setText(entry.getDate());
+                viewHolder.durationTxt.setText(Integer.toString(entry.getDuration()) + "min");
+                viewHolder.amountTxt.setText(Integer.toString(entry.getAmount()) + "cc");
 
                 if(entry.getLeftOrRight().equals("R")) {
-                    convertView.setBackgroundColor(getResources().getColor(R.color.bluedark));
+                    viewHolder.leftOrRightTxt.setBackgroundColor(getResources().getColor(R.color.bluedark));
                 } else {
-                    convertView.setBackgroundColor(getResources().getColor(R.color.greenlight));
+                    viewHolder.leftOrRightTxt.setBackgroundColor(getResources().getColor(R.color.greendark));
                 }
+                viewHolder.leftOrRightTxt.setText(entry.getLeftOrRight());
+
             } else {
                 Log.e(LOG_TAG, "history entry is null!");
             }

@@ -4,7 +4,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="5dp"
+    android:background="@drawable/stroke_border_background">
 
 
     <LinearLayout
@@ -13,17 +15,24 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/id_txt"
-            android:textStyle="bold"
+            android:id="@+id/date_txt"
+            android:textSize="16sp"
             android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
+            android:layout_weight="8"
+            android:layout_height="wrap_content"
+            android:gravity="start"/>
+
 
         <TextView
-            android:id="@+id/date_txt"
+            android:id="@+id/left_or_right_txt"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:textStyle="bold"/>
+
+
     </LinearLayout>
 
     <LinearLayout
@@ -32,38 +41,45 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/duration_txt"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="Amount:"
+            android:textStyle="bold"
+            android:textColor="@color/white"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="Duration:"
+            android:textStyle="bold"
+            android:textColor="@color/white"/>
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/amount_txt"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="wrap_content" />
-
-
-    </LinearLayout>
-
-
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"/>
 
         <TextView
-            android:id="@+id/delta_roll_txt"
+            android:id="@+id/duration_txt"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:id="@+id/delta_tilt_txt"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"/>
 
 
     </LinearLayout>
