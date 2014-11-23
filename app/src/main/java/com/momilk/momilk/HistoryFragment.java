@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -38,9 +39,11 @@ public class HistoryFragment extends Fragment{
     private HistoryFragmentCallback mCallback;
     private HistoryArrayAdapter mAdapter;
     private int mShownState;
+    private Button mShowLastHistoryBtn;
     private Button mShowDayHistoryBtn;
     private Button mShowWeekHistoryBtn;
     private Button mShowMonthHistoryBtn;
+    private ListView mHistoryListView;
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
@@ -72,6 +75,14 @@ public class HistoryFragment extends Fragment{
         View view = inflater.inflate(R.layout.fragment_history, container, false);
 
 
+        mShowLastHistoryBtn = (Button) view.findViewById(R.id.show_last_history_btn);
+        mShowLastHistoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showLastHistory();
+            }
+        });
+
         mShowDayHistoryBtn = (Button) view.findViewById(R.id.show_day_history_btn);
         mShowDayHistoryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,18 +107,18 @@ public class HistoryFragment extends Fragment{
             }
         });
 
-        ListView historyList = (ListView) view.findViewById(R.id.history_list);
+        mHistoryListView = (ListView) view.findViewById(R.id.history_list);
 
         TextView emptyText = (TextView)view.findViewById(android.R.id.empty);
-        historyList.setEmptyView(emptyText);
+        mHistoryListView.setEmptyView(emptyText);
 
         mAdapter = new HistoryArrayAdapter(getActivity(), R.layout.history_item_row);
-        historyList.setAdapter(mAdapter);
+        mHistoryListView.setAdapter(mAdapter);
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
                 new IntentFilter(Constants.ACTION_NOTIFY_DB_CHANGED));
 
-        showDayHistory();
+        showLastHistory();
 
         return view;
 
@@ -131,24 +142,28 @@ public class HistoryFragment extends Fragment{
 
     public void showLastHistory() {
 
-        mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
+        mShowLastHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
+        mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
         mShowWeekHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
         mShowMonthHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
 
-        ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getDayHistory();
+        ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getLastHistory();
+        mAdapter.setShadowedBackground(true);
         mAdapter.clear();
         mAdapter.addAll(history);
         mAdapter.notifyDataSetChanged();
 
-        mShownState = SHOW_DAY;
+        mShownState = SHOW_LAST;
     }
     public void showDayHistory() {
 
+        mShowLastHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
         mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
         mShowWeekHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
         mShowMonthHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
 
         ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getDayHistory();
+        mAdapter.setShadowedBackground(false);
         mAdapter.clear();
         mAdapter.addAll(history);
         mAdapter.notifyDataSetChanged();
@@ -159,11 +174,13 @@ public class HistoryFragment extends Fragment{
 
     public void showWeekHistory() {
 
+        mShowLastHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
         mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
         mShowWeekHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
         mShowMonthHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
 
         ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getWeekHistory();
+        mAdapter.setShadowedBackground(false);
         mAdapter.clear();
         mAdapter.addAll(history);
         mAdapter.notifyDataSetChanged();
@@ -174,11 +191,13 @@ public class HistoryFragment extends Fragment{
 
     public void showMonthHistory() {
 
+        mShowLastHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
         mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
         mShowWeekHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
         mShowMonthHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
 
         ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getMonthHistory();
+        mAdapter.setShadowedBackground(false);
         mAdapter.clear();
         mAdapter.addAll(history);
         mAdapter.notifyDataSetChanged();
@@ -265,9 +284,12 @@ public class HistoryFragment extends Fragment{
     }
 
 
+
+
     private class HistoryArrayAdapter extends ArrayAdapter<HistoryEntry> {
 
         private static final String LOG_TAG = "HistoryArrayAdapter";
+        private boolean mShadowedBackround = false;
 
         // TODO: check whether this list is necessary - maybe it is possible to reuse ArrayAdapters native data structure
         private ArrayList<HistoryEntry> mHistory;
@@ -330,6 +352,19 @@ public class HistoryFragment extends Fragment{
                 Log.e(LOG_TAG, "history entry is null!");
             }
 
+
+
+            LinearLayout historyItemLayout = (LinearLayout) convertView.findViewById(R.id.history_item_layout);
+            // setBackground() for linear layout is available only since API 16, therefore
+            // we use deprecated method here.
+            if (mShadowedBackround) {
+                historyItemLayout.setBackgroundDrawable(getResources().getDrawable(R.drawable.shadowed_background));
+                historyItemLayout.setPadding(20, 20, 20, 20);
+            } else {
+                historyItemLayout.setBackgroundDrawable(getResources().getDrawable(R.drawable.stroke_border_background));
+                historyItemLayout.setPadding(5, 5, 5, 5);
+            }
+
             return convertView;
         }
 
@@ -349,6 +384,10 @@ public class HistoryFragment extends Fragment{
         public void clear() {
             super.clear();
             mHistory.clear();
+        }
+
+        public void setShadowedBackground(boolean value) {
+            mShadowedBackround = value;
         }
     }
 

@@ -64,7 +64,7 @@ public class Constants {
         map.put(HOME_TAB_TAG, HomeFragment.class);
         map.put(HISTORY_TAB_TAG, HistoryFragment.class);
         map.put(HISTORY_LIST_TAB_TAG, HistoryFragment.class);
-        map.put(HISTORY_CLOCK_TAB_TAG, HistoryFragment.class);
+        map.put(HISTORY_CLOCK_TAB_TAG, HistoryClockFragment.class);
         map.put(SETTINGS_TAB_TAG, SettingsFragment.class);
         map.put(EXTRAS_TAB_TAG, ExtrasFragment.class);
         DEFAULT_TAB_FRAGMENT_MAP = Collections.unmodifiableMap(map);
@@ -83,6 +83,7 @@ public class Constants {
         map.put(NewMeasurementFragment.class, HOME_TAB_TAG);
         map.put(EmptyFragment.class, HOME_TAB_TAG);
         map.put(HistoryFragment.class, HISTORY_LIST_TAB_TAG);
+        map.put(HistoryClockFragment.class, HISTORY_CLOCK_TAB_TAG);
         map.put(SettingsFragment.class, SETTINGS_TAB_TAG);
         map.put(ExtrasFragment.class, EXTRAS_TAB_TAG);
         FRAGMENT_TO_TAB_MAP = Collections.unmodifiableMap(map);

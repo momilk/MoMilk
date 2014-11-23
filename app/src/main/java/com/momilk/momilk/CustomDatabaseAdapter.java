@@ -60,28 +60,37 @@ public class CustomDatabaseAdapter {
         return id;
     }
 
+    public synchronized ArrayList<HistoryFragment.HistoryEntry> getLastHistory() {
+        return getHistory(null,CustomSQLOpenHelper.DATE + " DESC LIMIT 1");
+    }
+
     public synchronized ArrayList<HistoryFragment.HistoryEntry> getDayHistory() {
-        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 days')");
+        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 days')",
+                CustomSQLOpenHelper.DATE + " DESC");
     }
 
 
     public synchronized ArrayList<HistoryFragment.HistoryEntry> getWeekHistory() {
-        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-7 days')");
+        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-7 days')",
+                CustomSQLOpenHelper.DATE + " DESC");
     }
 
 
     public synchronized ArrayList<HistoryFragment.HistoryEntry> getMonthHistory() {
-        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 month')");
+        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 month')",
+                CustomSQLOpenHelper.DATE + " DESC");
     }
 
-    private synchronized ArrayList<HistoryFragment.HistoryEntry> getHistory(String selection) {
+    private synchronized ArrayList<HistoryFragment.HistoryEntry> getHistory(String selection,
+                                                                            String orderBy) {
         SQLiteDatabase db = mHelper.getReadableDatabase();
 
         String[] columns = {CustomSQLOpenHelper.UID, CustomSQLOpenHelper.LEFT_OR_RIGHT,
                 CustomSQLOpenHelper.DATE, CustomSQLOpenHelper.DURATION, CustomSQLOpenHelper.AMOUNT,
                 CustomSQLOpenHelper.DELTA_ROLL, CustomSQLOpenHelper.DELTA_TILT};
 
-        Cursor cursor = db.query(CustomSQLOpenHelper.TABLE_NAME, columns, selection, null, null, null, null);
+        Cursor cursor = db.query(CustomSQLOpenHelper.TABLE_NAME, columns, selection,
+                null, null, null, orderBy);
 
         ArrayList<HistoryFragment.HistoryEntry> history = new ArrayList<HistoryFragment.HistoryEntry>();
         
