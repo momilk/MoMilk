@@ -178,7 +178,8 @@ public class SyncWithDeviceThread extends Thread {
             Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
             Bundle bundle = new Bundle();
             bundle.putString(Constants.TOAST,
-                    "Date: " + formattedDate + "\nIndex: " + index +"\nL/R: " +
+                    "Parsed:\n" +
+                            "Date: " + formattedDate + "\nIndex: " + index +"\nL/R: " +
                             leftOrRight + "\nDuration: " + duration + "\nAmount: " + amount +
                             "\n\u0394Roll: " + deltaRoll + "\n\u0394Tilt: " + deltaTilt);
             msg.setData(bundle);

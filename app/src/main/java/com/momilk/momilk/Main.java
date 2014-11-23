@@ -99,13 +99,13 @@ public class Main extends FragmentActivity implements
                     }
                     break;
                 case Constants.MESSAGE_WRITE:
-                    @SuppressWarnings("UnusedDeclaration") // This might come in handy at some point
-                            String writeMessage = (String) msg.obj;
+                    String writeMessage = (String) msg.obj;
+                    Toast.makeText(getApplicationContext(), "Sending:\n" + writeMessage, Toast.LENGTH_LONG).show();
                     break;
                 case Constants.MESSAGE_READ:
                     String readMessage = (String) msg.obj;
 
-                    Toast.makeText(getApplicationContext(), readMessage, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Received:\n" + readMessage, Toast.LENGTH_LONG).show();
 
                     if (mSyncWithDeviceThread != null && mSyncWithDeviceThread.isAlive()) {
                         mSyncWithDeviceThread.newIncomingMessage(readMessage);
