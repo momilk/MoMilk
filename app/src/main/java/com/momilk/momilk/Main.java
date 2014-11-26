@@ -45,7 +45,7 @@ public class Main extends FragmentActivity implements
         SettingsFragment.SettingsFragmentCallback {
 
     // Set this to true in order access various debug features of the app (through ActionBar)
-    private static final boolean ENABLE_DEBUG = true;
+    private static final boolean ENABLE_DEBUG = false;
 
 
 
@@ -581,15 +581,6 @@ public class Main extends FragmentActivity implements
         }
         else {
 
-            // This check is required because this method might be rerun from onActivityResult - trying
-            // to execute any fragment transaction during onActivityResult results
-            // in a state loss and IllegalStateException.
-            // In case this method indeed rerun from onActivityResult, then the switching of the
-            // fragment will be handled in onPostResume().
-//            if (mNextFragmentClass == null || !mNextFragmentClass.equals(DevicesListFragment.class)) {
-//                getFragment(DevicesListFragment.class);
-//            }
-
             if(mBluetoothAdapter.isDiscovering()) {
                 mBluetoothAdapter.cancelDiscovery();
             }
@@ -713,6 +704,7 @@ public class Main extends FragmentActivity implements
                         editor.putString(getString(R.string.preference_default_device_name_key), device.getName());
                         editor.putString(getString(R.string.preference_default_device_address_key), device.getAddress());
                         editor.commit();
+                        // Show the default settings fragment after device has been chosen
                         getFragment(SettingsFragment.class);
                         break;
 
@@ -722,9 +714,12 @@ public class Main extends FragmentActivity implements
             }
         };
 
+        String message = getString(R.string.preference_default_device_dialog_message_part1) + " "
+                + device.getName() + " " + getString(R.string.preference_default_device_dialog_message_part2);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Make " + device.getName() + " the default device?").setPositiveButton("Yes", dialogClickListener)
-                .setNegativeButton("No", dialogClickListener).show();
+        builder.setMessage(message)
+                .setPositiveButton(getString(R.string.dialog_positive_text), dialogClickListener)
+                .setNegativeButton(getString(R.string.dialog_negative_text), dialogClickListener).show();
 
     }
 
@@ -765,7 +760,7 @@ public class Main extends FragmentActivity implements
 
     @Override
     public void onPersonalDataClick() {
-        Toast.makeText(this, "personal data click", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "under construction", Toast.LENGTH_LONG).show();
 
     }
 
@@ -782,6 +777,28 @@ public class Main extends FragmentActivity implements
             getFragment(DevicesListFragment.class);
             discoverBluetoothDevices();
         }
+    }
+
+    @Override
+    public void onHistoryClearClick() {
+        DialogInterface.OnClickListener clearHistoryClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        mDBAdapter.clearTable();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(getString(R.string.preference_clear_history_dialog_message))
+                .setPositiveButton(getString(R.string.dialog_positive_text), clearHistoryClickListener)
+                .setNegativeButton(getString(R.string.dialog_negative_text), clearHistoryClickListener).show();
     }
 
 

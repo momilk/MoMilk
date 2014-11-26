@@ -3,6 +3,10 @@
 
     <string name="app_name">MoMilk</string>
 
+    <string name="dialog_positive_text">Yes</string>
+    <string name="dialog_negative_text">No</string>
+
+
     <string name="discover_devices_btn">Discover devices</string>
     <string name="listen_for_connection_btn">Listen for connection</string>
     <string name="send_msg_btn">Send</string>
@@ -25,13 +29,18 @@
     <string name="preference_personal_data_title">Edit</string>
     <string name="preference_personal_data_summary">Edit mother\'s and baby\'s personal data</string>
     <string name="preference_default_device_key">preference_default_device</string>
-    <string name="preference_default_device_title">Default Bluetooth device</string>
-    <string name="preference_default_device_summary">Current:</string>
+    <string name="preference_default_device_title">Bluetooth device</string>
+    <string name="preference_summary_current_text">Current:</string>
     <string name="preference_default_device_name_key">preference_default_device_name</string>
     <string name="preference_default_device_address_key">preference_default_device_address</string>
     <string name="preference_language_key">preference_language</string>
     <string name="preference_language_title">Language</string>
     <string name="discovered_devices_txt">Discovered devices:</string>
+    <string name="preference_clear_history_key">preference_clear_history</string>
+    <string name="preference_clear_history_title">Clear history</string>
+    <string name="preference_clear_history_dialog_message">All history entries will be permanently deleted. Proceed?</string>
+    <string name="preference_default_device_dialog_message_part1">Set</string>
+    <string name="preference_default_device_dialog_message_part2">as the default device?</string>
 
 
 </resources>

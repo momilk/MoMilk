@@ -2,18 +2,22 @@ package com.momilk.momilk;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.preference.PreferenceFragment;
+import android.util.AttributeSet;
 
 /**
  * Default fragment shown for a SETTINGS tab.
  */
 
-public class SettingsFragment extends PreferenceFragment
-        implements Preference.OnPreferenceClickListener {
+public class SettingsFragment extends PreferenceFragment implements
+        Preference.OnPreferenceClickListener {
 
     SettingsFragmentCallback mCallback;
 
@@ -37,8 +41,12 @@ public class SettingsFragment extends PreferenceFragment
         // Default device
         preference = (Preference) findPreference(getResources().getString(R.string.preference_default_device_key));
         preference.setOnPreferenceClickListener(this);
-        preference.setSummary(getString(R.string.preference_default_device_summary) + " " +
+        preference.setSummary(getString(R.string.preference_summary_current_text) + " " +
                 sharedPref.getString(getString(R.string.preference_default_device_name_key), "-"));
+
+        // Clear history
+        preference = (Preference) findPreference(getResources().getString(R.string.preference_clear_history_key));
+        preference.setOnPreferenceClickListener(this);
 
     }
 
@@ -67,6 +75,9 @@ public class SettingsFragment extends PreferenceFragment
         } else if (key.equals(getResources().getString(R.string.preference_default_device_key))) {
             mCallback.onSetDefaultDeviceClick();
             return true;
+        } else if (key.equals(getResources().getString(R.string.preference_clear_history_key))) {
+            mCallback.onHistoryClearClick();
+            return true;
         } else {
             return false;
         }
@@ -74,12 +85,13 @@ public class SettingsFragment extends PreferenceFragment
     }
 
 
+
     // Container Activity must implement this interface
     public interface SettingsFragmentCallback {
         public void onPersonalDataClick();
         public void onSetDefaultDeviceClick();
+        public void onHistoryClearClick();
     }
 
 
-
-}
+ }

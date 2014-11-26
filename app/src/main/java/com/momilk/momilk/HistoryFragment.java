@@ -143,10 +143,10 @@ public class HistoryFragment extends Fragment{
 
     public void showLastHistory() {
 
-        mShowLastHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
-        mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
-        mShowWeekHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
-        mShowMonthHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
+        mShowLastHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor));
+        mShowDayHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
+        mShowWeekHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
+        mShowMonthHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
 
         ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getLastHistory();
         mAdapter.setShadowedBackground(true);
@@ -158,10 +158,11 @@ public class HistoryFragment extends Fragment{
     }
     public void showDayHistory() {
 
-        mShowLastHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
-        mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
-        mShowWeekHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
-        mShowMonthHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
+
+        mShowLastHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
+        mShowDayHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor));
+        mShowWeekHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
+        mShowMonthHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
 
         ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getDayHistory();
         mAdapter.setShadowedBackground(false);
@@ -175,10 +176,10 @@ public class HistoryFragment extends Fragment{
 
     public void showWeekHistory() {
 
-        mShowLastHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
-        mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
-        mShowWeekHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
-        mShowMonthHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
+        mShowLastHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
+        mShowDayHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
+        mShowWeekHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor));
+        mShowMonthHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
 
         ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getWeekHistory();
         mAdapter.setShadowedBackground(false);
@@ -192,10 +193,10 @@ public class HistoryFragment extends Fragment{
 
     public void showMonthHistory() {
 
-        mShowLastHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
-        mShowDayHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
-        mShowWeekHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_unfocused);
-        mShowMonthHistoryBtn.setBackgroundResource(R.drawable.rectangle_button_pressed);
+        mShowLastHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
+        mShowDayHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
+        mShowWeekHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
+        mShowMonthHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor));
 
         ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getMonthHistory();
         mAdapter.setShadowedBackground(false);

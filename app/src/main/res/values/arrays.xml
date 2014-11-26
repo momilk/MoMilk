@@ -3,11 +3,13 @@
     
     <string-array name="preference_language_aliases">
         <item>English (US)</item>
+        <item>English (UK)</item>
     </string-array>
 
 
     <string-array name="preference_language_values">
         <item>"en-US"</item>
+        <item>"en-UK"</item>
     </string-array>
     
 </resources>

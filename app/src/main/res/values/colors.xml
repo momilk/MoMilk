@@ -8,6 +8,7 @@
     <color name="greenlight">#70C656</color>
     <color name="greendark">#53933F</color>
     <color name="orangelight">#EE5E22</color>
+    <color name="orangelight_transparent">#60EE5E22</color>
     <color name="orangedark">#BB6008</color>
     <color name="brown">#382215</color>
     <color name="browndark">#21140D</color>
@@ -16,4 +17,5 @@
 
     <color name="background">@color/brown</color>
     <color name="textcolor">@color/orangelight</color>
+    <color name="textcolor_transparent">@color/orangelight_transparent</color>
 </resources>
