@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/preference_category_personal_data"
+        android:key="preference_category_personal_data">
+
+
+        <PreferenceScreen
+            android:key="@string/preference_personal_data_key"
+            android:title="@string/preference_personal_data_title"
+            android:summary="@string/preference_personal_data_summary"/>
+
+    </PreferenceCategory>
+
+
+    <PreferenceCategory
+        android:title="@string/preference_category_system"
+        android:key="preference_category_system">
+
+        <PreferenceScreen
+            android:key="@string/preference_default_device_key"
+            android:title="@string/preference_default_device_title"
+            android:summary="TODO: show currently chosen device here"/>
+
+        <ListPreference
+            android:key="@string/preference_language_key"
+            android:title="@string/preference_language_title"
+            android:summary="TODO: show currently selected language here"
+            android:defaultValue="en-US"
+            android:entries="@array/preference_language_aliases"
+            android:entryValues="@array/preference_language_values"/>
+
+
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

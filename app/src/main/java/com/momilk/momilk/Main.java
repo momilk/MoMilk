@@ -4,13 +4,13 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -31,23 +31,28 @@ import android.widget.TabHost;
 import android.widget.Toast;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.Stack;
 
 
 public class Main extends FragmentActivity implements
-        TabHost.OnTabChangeListener, HomeFragment.HomeFragmentCallback,
-        BTDevicesListFragment.BTDevicesListFragmentCallback,
+        TabHost.OnTabChangeListener,
+        HomeFragment.HomeFragmentCallback,
+        DevicesListFragment.DevicesListFragmentCallback,
         HistoryFragment.HistoryFragmentCallback,
         ExtrasFragment.ExtrasFragmentCallback,
-        NewMeasurementFragment.NewMeasurementFragmentCallback {
+        NewMeasurementFragment.NewMeasurementFragmentCallback,
+        SettingsFragment.SettingsFragmentCallback {
 
     // Set this to true in order access various debug features of the app (through ActionBar)
-    private static final boolean ENABLE_DEBUG = false;
+    private static final boolean ENABLE_DEBUG = true;
 
 
 
-    private static final int RERUN_LIST_BLUETOOTH_DEVICES = 0;
+    private static final int RERUN_DISCOVER_BLUETOOTH_DEVICES = 0;
     private static final int RERUN_ON_SYNC_CLICK = 1;
+    private static final int RERUN_CONNECT_TO_DEFAULT_DEVICE = 2;
+    private static final int RERUN_ON_SET_DEFAULT_DEVICE_CLICK = 3;
 
 
     private static final String LOG_TAG = "MainActivity";
@@ -86,15 +91,12 @@ public class Main extends FragmentActivity implements
                 case Constants.MESSAGE_STATE_CHANGE:
                     switch (msg.arg1) {
                         case BluetoothService.STATE_CONNECTED:
-                            //setStatus("Connected to: " + mConnectedDeviceName);
                                 rerunMethod();
                             break;
                         case BluetoothService.STATE_CONNECTING:
-                            //setStatus("Connecting...");
                             break;
                         case BluetoothService.STATE_LISTEN:
                         case BluetoothService.STATE_NONE:
-                            //setStatus("Not connected");
                             break;
                     }
                     break;
@@ -142,19 +144,14 @@ public class Main extends FragmentActivity implements
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+
             // When discovery finds a device
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                Log.i(LOG_TAG, "onReceive is called!");
-
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                BluetoothClass deviceClass = intent.getParcelableExtra(BluetoothDevice.EXTRA_CLASS);
-                // Add the name and address to an array adapter to show in a ListView
-
-
-                BTDevicesListFragment devicesListFragment =
-                        (BTDevicesListFragment) getFragment(BTDevicesListFragment.class);
-                devicesListFragment.add(device, deviceClass);
+                DevicesListFragment devicesListFragment =
+                        (DevicesListFragment) getFragment(DevicesListFragment.class);
+                devicesListFragment.add(device);
 
             }
         }
@@ -198,37 +195,10 @@ public class Main extends FragmentActivity implements
 
 
     @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        // Performing this check in onResume() covers the case in which BT was
-        // not enabled during onStart(), so we were paused to enable it...
-        // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
-//        if (mBluetoothService != null) {
-//            // Only if the state is STATE_NONE, do we know that we haven't started already
-//            if (mBluetoothService.getState() == BluetoothService.STATE_NONE) {
-//                // Start the Bluetooth chat services
-//                mBluetoothService.start();
-//            }
-//        }
-    }
-
-
-    @Override
-    protected void onPause() {
+    protected void onStop() {
         super.onPause();
-    }
 
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Stop the Bluetooth chat services
+        // Stop the Bluetooth services
         if (mBluetoothService != null) mBluetoothService.stop();
         if(mBluetoothAdapter != null) {
             mBluetoothAdapter.cancelDiscovery();
@@ -240,6 +210,7 @@ public class Main extends FragmentActivity implements
             // Do nothing - the receiver wasn't registered
         }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -253,79 +224,35 @@ public class Main extends FragmentActivity implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_clear_all_measurements:
+            case R.id.action_clear_db_table:
                 mDBAdapter.clearTable();
                 return true;
+            case R.id.action_reset_default_device:
+                getPreferences(FragmentActivity.MODE_PRIVATE).edit().
+                        remove(getString(R.string.preference_default_device_address_key)).commit();
+                getPreferences(FragmentActivity.MODE_PRIVATE).edit().
+                        remove(getString(R.string.preference_default_device_name_key)).commit();
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-
-        Log.d(LOG_TAG, "onPostResume() is called");
-
-        if (mNextFragmentClass != null) {
-            getFragment(mNextFragmentClass);
-            mNextFragmentClass = null;
-        }
-
-    }
-
-    public void deviceSelected(final BluetoothDevice device) {
-        Log.i(LOG_TAG, "deviceSelected is called on device: " + device.getName());
-
-
-        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case DialogInterface.BUTTON_POSITIVE:
-                        getFragment(HomeFragment.class);
-                        connectToDevice(device);
-                        break;
-
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        //No button clicked
-                        break;
-                }
-            }
-        };
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Connect to " + device.getName()).setPositiveButton("Yes", dialogClickListener)
-                .setNegativeButton("No", dialogClickListener).show();
-
     }
 
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case Constants.REQUEST_ENABLE_BT:
-                // When the request to enable Bluetooth returns
                 if (resultCode == Activity.RESULT_OK) {
-                    // Fragment transactions can't be executed from within onActivityResult,
-                    // therefore need to schedule it to be executed during onPostResume.
-                    scheduleFragmentChange(BTDevicesListFragment.class);
                     rerunMethod();
                 } else {
+                    // The assumption here is that when the flow is aborted, all the
+                    // methods which should've been rerun can be discarded
+                    mRerunMethodStack.clear();
                     Toast.makeText(this, "Bluetooth is disabled - aborting", Toast.LENGTH_LONG).show();
                 }
             default:
                 break;
         }
     }
-
-    private void scheduleFragmentChange(Class<? extends Fragment> claz) {
-        if (mNextFragmentClass != null) {
-            Log.e(LOG_TAG, "owerwriting mNextFragmentClass which is not null. Current: " +
-            mNextFragmentClass.getSimpleName() + " New: " + claz.getSimpleName());
-        }
-        mNextFragmentClass = claz;
-    }
-
 
     /*
     This method accepts the index and registers this index for being rerun at a later stage
@@ -343,11 +270,17 @@ public class Main extends FragmentActivity implements
         if (!mRerunMethodStack.empty()) {
             int index = mRerunMethodStack.pop();
             switch (index) {
-                case RERUN_LIST_BLUETOOTH_DEVICES:
-                    listBluetoothDevices();
+                case RERUN_DISCOVER_BLUETOOTH_DEVICES:
+                    discoverBluetoothDevices();
                     break;
                 case RERUN_ON_SYNC_CLICK:
                     onSyncClick();
+                    break;
+                case RERUN_CONNECT_TO_DEFAULT_DEVICE:
+                    connectToDefaultDevice();
+                    break;
+                case RERUN_ON_SET_DEFAULT_DEVICE_CLICK:
+                    onSetDefaultDeviceClick();
                     break;
                 default:
                     break;
@@ -633,9 +566,7 @@ public class Main extends FragmentActivity implements
     }
 
 
-    public void listBluetoothDevices() {
-
-        Log.i(LOG_TAG, "listBluetoothDevices is called!");
+    public void discoverBluetoothDevices() {
 
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "Your device does not support bluetooth",
@@ -643,7 +574,7 @@ public class Main extends FragmentActivity implements
         }
         else if (!mBluetoothAdapter.isEnabled()) {
             // This will cause this method to be rerun during onActivityResult execution
-            registerForRerun(RERUN_LIST_BLUETOOTH_DEVICES);
+            registerForRerun(RERUN_DISCOVER_BLUETOOTH_DEVICES);
 
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, Constants.REQUEST_ENABLE_BT);
@@ -655,9 +586,9 @@ public class Main extends FragmentActivity implements
             // in a state loss and IllegalStateException.
             // In case this method indeed rerun from onActivityResult, then the switching of the
             // fragment will be handled in onPostResume().
-            if (mNextFragmentClass == null || !mNextFragmentClass.equals(BTDevicesListFragment.class)) {
-                getFragment(BTDevicesListFragment.class);
-            }
+//            if (mNextFragmentClass == null || !mNextFragmentClass.equals(DevicesListFragment.class)) {
+//                getFragment(DevicesListFragment.class);
+//            }
 
             if(mBluetoothAdapter.isDiscovering()) {
                 mBluetoothAdapter.cancelDiscovery();
@@ -674,18 +605,34 @@ public class Main extends FragmentActivity implements
     }
 
 
-    private void connectToDevice(BluetoothDevice device) {
+    private void connectToDefaultDevice() {
 
-        try {
-            this.unregisterReceiver(mReceiver);
-        } catch (IllegalArgumentException e ) {
-            // Do nothing - the receiver wasn't registered
-        }
+        if (!mBluetoothAdapter.isEnabled()) {
+            // This will cause this method to be rerun during onActivityResult execution
+            registerForRerun(RERUN_CONNECT_TO_DEFAULT_DEVICE);
 
-        if (mBluetoothService == null) {
-            setupBluetoothService();
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, Constants.REQUEST_ENABLE_BT);
+
+        } else {
+
+            if (mBluetoothService == null) {
+                setupBluetoothService();
+            }
+
+            SharedPreferences sharedPref = getPreferences(FragmentActivity.MODE_PRIVATE);
+            String deviceAddressKey = getString(R.string.preference_default_device_address_key);
+
+            if (sharedPref.contains(deviceAddressKey)) {
+                mBluetoothService.connect(mBluetoothAdapter.getRemoteDevice(sharedPref.getString(deviceAddressKey, null)), true);
+            } else {
+
+                // The assumption here is that when the flow is aborted, all the
+                // methods which should've been rerun can be discarded
+                mRerunMethodStack.clear();
+                Toast.makeText(this, "Default device is not set", Toast.LENGTH_LONG).show();
+            }
         }
-        mBluetoothService.connect(device, true);
 
     }
 
@@ -710,10 +657,9 @@ public class Main extends FragmentActivity implements
             setupBluetoothService();
         }
 
-        // TODO: this method should not initiate devices discovery, but use a default device first
         if (mBluetoothService.getState() != BluetoothService.STATE_CONNECTED) {
             registerForRerun(RERUN_ON_SYNC_CLICK);
-            listBluetoothDevices();
+            connectToDefaultDevice();
         } else {
             if (mSyncWithDeviceThread != null) {
                 // Ensure that the existing thread is cancelled
@@ -750,6 +696,44 @@ public class Main extends FragmentActivity implements
 
     // -------------------------------------------------------------------------------------------
     //
+    // Callback methods for interaction with DevicesListFragment
+    //
+    // -------------------------------------------------------------------------------------------
+
+
+    public void deviceSelected(final BluetoothDevice device) {
+
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putString(getString(R.string.preference_default_device_name_key), device.getName());
+                        editor.putString(getString(R.string.preference_default_device_address_key), device.getAddress());
+                        editor.commit();
+                        getFragment(SettingsFragment.class);
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Make " + device.getName() + " the default device?").setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener).show();
+
+    }
+
+    public Set<BluetoothDevice> getPairedDevices() {
+        return mBluetoothAdapter.getBondedDevices();
+    }
+
+    // -------------------------------------------------------------------------------------------
+    //
     // Callback methods for interaction with HistoryFragment
     //
     // -------------------------------------------------------------------------------------------
@@ -769,6 +753,35 @@ public class Main extends FragmentActivity implements
     @Override
     public void onExtraSelected(String extraTag) {
         // TODO: complete this method
+    }
+
+
+
+    // -------------------------------------------------------------------------------------------
+    //
+    // Callback methods for interaction with SettingsFragment
+    //
+    // -------------------------------------------------------------------------------------------
+
+    @Override
+    public void onPersonalDataClick() {
+        Toast.makeText(this, "personal data click", Toast.LENGTH_LONG).show();
+
+    }
+
+    @Override
+    public void onSetDefaultDeviceClick() {
+
+        if (!mBluetoothAdapter.isEnabled()) {
+            // This will cause this method to be rerun during onActivityResult execution
+            registerForRerun(RERUN_ON_SET_DEFAULT_DEVICE_CLICK);
+
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, Constants.REQUEST_ENABLE_BT);
+        } else {
+            getFragment(DevicesListFragment.class);
+            discoverBluetoothDevices();
+        }
     }
 
 

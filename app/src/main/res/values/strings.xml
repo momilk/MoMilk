@@ -3,12 +3,6 @@
 
     <string name="app_name">MoMilk</string>
 
-    <string name="home_tab_indicator">Home</string>
-    <string name="history_tab_indicator">History</string>
-    <string name="extras_tab_indicator">Extras</string>
-    <string name="settings_tab_indicator">Settings</string>
-
-
     <string name="discover_devices_btn">Discover devices</string>
     <string name="listen_for_connection_btn">Listen for connection</string>
     <string name="send_msg_btn">Send</string>
@@ -22,5 +16,22 @@
     <string name="stop_btn">STOP</string>
     <string name="empty_list_txt">No measurements yet</string>
     <string name="action_clear_all_measurements">Clear all measurements</string>
+    <string name="paired_devices_txt">Paired devices:</string>
+
+    <!--This section contains strings used in Preferences (Settings)-->
+    <string name="preference_category_system">System</string>
+    <string name="preference_category_personal_data">Personal data</string>
+    <string name="preference_personal_data_key">preference_personal_data</string>
+    <string name="preference_personal_data_title">Edit</string>
+    <string name="preference_personal_data_summary">Edit mother\'s and baby\'s personal data</string>
+    <string name="preference_default_device_key">preference_default_device</string>
+    <string name="preference_default_device_title">Default Bluetooth device</string>
+    <string name="preference_default_device_summary">Current:</string>
+    <string name="preference_default_device_name_key">preference_default_device_name</string>
+    <string name="preference_default_device_address_key">preference_default_device_address</string>
+    <string name="preference_language_key">preference_language</string>
+    <string name="preference_language_title">Language</string>
+    <string name="discovered_devices_txt">Discovered devices:</string>
+
 
 </resources>

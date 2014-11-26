@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -334,6 +335,27 @@ public class HistoryFragment extends Fragment{
                 viewHolder = (ViewHolder) convertView.getTag();
             }
 
+
+            LinearLayout historyItemLayout = (LinearLayout) convertView.findViewById(R.id.history_item_layout);
+            View separator = historyItemLayout.findViewById(R.id.history_items_separator);
+            // setBackground() for linear layout is available only since API 16, therefore
+            // we use deprecated method here.
+            if (mShadowedBackround) {
+                separator.setVisibility(View.GONE);
+                historyItemLayout.setBackgroundDrawable(getResources().getDrawable(R.drawable.shadowed_background));
+                historyItemLayout.setPadding(20, 20, 20, 20);
+            } else {
+                if (position >= mHistory.size() - 1) {
+                    // No need for separator for the last entry
+                    separator.setVisibility(View.GONE);
+                } else {
+                    separator.setVisibility(View.VISIBLE);
+                }
+                historyItemLayout.setBackgroundDrawable(null);
+                historyItemLayout.setPadding(5, 5, 5, 5);
+            }
+
+
             HistoryEntry entry = mHistory.get(position);
 
             if (entry != null) {
@@ -341,28 +363,17 @@ public class HistoryFragment extends Fragment{
                 viewHolder.durationTxt.setText(Integer.toString(entry.getDuration()) + "min");
                 viewHolder.amountTxt.setText(Integer.toString(entry.getAmount()) + "cc");
 
+                GradientDrawable leftOrRightBackground =
+                        (GradientDrawable) viewHolder.leftOrRightTxt.getBackground();
                 if(entry.getLeftOrRight().equals("R")) {
-                    viewHolder.leftOrRightTxt.setBackgroundColor(getResources().getColor(R.color.bluedark));
+                    leftOrRightBackground.setColor(getResources().getColor(R.color.bluedark));
                 } else {
-                    viewHolder.leftOrRightTxt.setBackgroundColor(getResources().getColor(R.color.greendark));
+                    leftOrRightBackground.setColor(getResources().getColor(R.color.cyan));
                 }
                 viewHolder.leftOrRightTxt.setText(entry.getLeftOrRight());
 
             } else {
                 Log.e(LOG_TAG, "history entry is null!");
-            }
-
-
-
-            LinearLayout historyItemLayout = (LinearLayout) convertView.findViewById(R.id.history_item_layout);
-            // setBackground() for linear layout is available only since API 16, therefore
-            // we use deprecated method here.
-            if (mShadowedBackround) {
-                historyItemLayout.setBackgroundDrawable(getResources().getDrawable(R.drawable.shadowed_background));
-                historyItemLayout.setPadding(20, 20, 20, 20);
-            } else {
-                historyItemLayout.setBackgroundDrawable(getResources().getDrawable(R.drawable.stroke_border_background));
-                historyItemLayout.setPadding(5, 5, 5, 5);
             }
 
             return convertView;

@@ -19,4 +19,5 @@
     <dimen name="extras_fragment_layout_padding">10dp</dimen>
     <dimen name="history_period_btn_height">35dp</dimen>
     <dimen name="history_period_btn_width">75dp</dimen>
+    <dimen name="devices_list_fragment_titles_text_size">20sp</dimen>
 </resources>

@@ -1,9 +1,6 @@
 package com.momilk.momilk;
 
 
-import android.graphics.drawable.Drawable;
-import android.support.v4.app.Fragment;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,12 +76,12 @@ public class Constants {
     static {
         Map<Class, String> map = new HashMap<Class, String>();
         map.put(HomeFragment.class, HOME_TAB_TAG);
-        map.put(BTDevicesListFragment.class, HOME_TAB_TAG);
         map.put(NewMeasurementFragment.class, HOME_TAB_TAG);
         map.put(EmptyFragment.class, HOME_TAB_TAG);
         map.put(HistoryFragment.class, HISTORY_LIST_TAB_TAG);
         map.put(HistoryClockFragment.class, HISTORY_CLOCK_TAB_TAG);
         map.put(SettingsFragment.class, SETTINGS_TAB_TAG);
+        map.put(DevicesListFragment.class, SETTINGS_TAB_TAG);
         map.put(ExtrasFragment.class, EXTRAS_TAB_TAG);
         FRAGMENT_TO_TAB_MAP = Collections.unmodifiableMap(map);
     }
