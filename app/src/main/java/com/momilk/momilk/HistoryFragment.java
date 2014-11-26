@@ -352,7 +352,7 @@ public class HistoryFragment extends Fragment{
                     separator.setVisibility(View.VISIBLE);
                 }
                 historyItemLayout.setBackgroundDrawable(null);
-                historyItemLayout.setPadding(5, 5, 5, 5);
+                historyItemLayout.setPadding(5, 5, 10, 5);
             }
 
 
