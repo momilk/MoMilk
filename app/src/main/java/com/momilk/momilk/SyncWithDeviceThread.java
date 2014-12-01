@@ -28,7 +28,7 @@ public class SyncWithDeviceThread extends Thread {
 
     private static final Pattern END_SESSION_PATTERN = Pattern.compile("^Z@(\\d+)$");
     private static final Pattern DATA_PATTERN =
-            Pattern.compile("^W@(\\d+)@(L|R)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)$");
+            Pattern.compile("^W@(\\d+)@(L|R)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(-?\\d+)@(-?\\d+)@(-?\\d+)$");
 
     private enum SyncState {
         IDLE, WAIT_FOR_SESSION_START, WAIT_FOR_SESSION_END,
@@ -169,8 +169,8 @@ public class SyncWithDeviceThread extends Thread {
             String leftOrRight = matcher.group(2);
             String duration = matcher.group(9);
             String amount = matcher.group(10);
-            String deltaRoll = matcher.group(10);
-            String deltaTilt = matcher.group(11);
+            String deltaRoll = matcher.group(11);
+            String deltaTilt = matcher.group(12);
 
 
 
