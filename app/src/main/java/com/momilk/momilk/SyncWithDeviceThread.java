@@ -35,8 +35,6 @@ public class SyncWithDeviceThread extends Thread {
         SESSION_SUCCESSFULL, SESSION_UNSUCCESSFULL, DONE
     }
 
-
-    private final Context mContext;
     private final BluetoothService mBluetoothService;
     // Making it synch because it will be accessed by this and other threads (at least Main)
     private ConcurrentLinkedQueue<String> mInputBuffer;
@@ -47,9 +45,8 @@ public class SyncWithDeviceThread extends Thread {
     private SyncState mSyncState;
     private boolean mCancelled;
 
-    public SyncWithDeviceThread(Context context, BluetoothService bluetoothService,
+    public SyncWithDeviceThread(BluetoothService bluetoothService,
                                 CustomDatabaseAdapter dbAdapter, Handler handler) {
-        mContext = context;
         mBluetoothService = bluetoothService;
         mInputBuffer = new ConcurrentLinkedQueue<String>();
         mDataPackets = new ArrayList<DataPacket>();
@@ -111,6 +108,15 @@ public class SyncWithDeviceThread extends Thread {
 
                 case SESSION_SUCCESSFULL:
                     storeReceivedPackets();
+
+                    // Send a success message back to the Activity
+                    Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
+                    Bundle bundle = new Bundle();
+                    bundle.putString(Constants.TOAST, "Sync complete: " +
+                            Integer.toString(mDataPackets.size()) + " new entries");
+                    msg.setData(bundle);
+                    mHandler.sendMessage(msg);
+
                     return;
                 case SESSION_UNSUCCESSFULL:
                     // The packets will be re-transmitted
@@ -134,7 +140,13 @@ public class SyncWithDeviceThread extends Thread {
         }
         // Check that we're actually connected before trying anything
         if (mBluetoothService.getState() != BluetoothService.STATE_CONNECTED) {
-            Toast.makeText(mContext, "Sync failed: not connected", Toast.LENGTH_LONG).show();
+            // Send a failure message back to the Activity
+            Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
+            Bundle bundle = new Bundle();
+            bundle.putString(Constants.TOAST, "Sync failed: not connected");
+            msg.setData(bundle);
+            mHandler.sendMessage(msg);
+
             setSyncState(SyncState.DONE);
             return false;
         }
@@ -174,16 +186,11 @@ public class SyncWithDeviceThread extends Thread {
 
 
 
-            // Show toast in the activity
-            Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
-            Bundle bundle = new Bundle();
-            bundle.putString(Constants.TOAST,
-                    "Parsed:\n" +
-                            "Date: " + formattedDate + "\nIndex: " + index +"\nL/R: " +
+            // Show toast in the activity for debug
+            String msg = "Parsed:\n" + "Date: " + formattedDate + "\nIndex: " + index +"\nL/R: " +
                             leftOrRight + "\nDuration: " + duration + "\nAmount: " + amount +
-                            "\n\u0394Roll: " + deltaRoll + "\n\u0394Tilt: " + deltaTilt);
-            msg.setData(bundle);
-            mHandler.sendMessage(msg);
+                            "\n\u0394Roll: " + deltaRoll + "\n\u0394Tilt: " + deltaTilt;
+            Main.debugToast(msg, true);
 
             DataPacket packet = new DataPacket();
             packet.mIndex = Integer.valueOf(index);

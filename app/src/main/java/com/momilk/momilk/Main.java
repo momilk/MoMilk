@@ -47,15 +47,15 @@ public class Main extends FragmentActivity implements
     // Set this to true in order access various debug features of the app (through ActionBar)
     private static final boolean ENABLE_DEBUG = false;
 
-
-
     private static final int RERUN_DISCOVER_BLUETOOTH_DEVICES = 0;
     private static final int RERUN_ON_SYNC_CLICK = 1;
     private static final int RERUN_CONNECT_TO_DEFAULT_DEVICE = 2;
     private static final int RERUN_ON_SET_DEFAULT_DEVICE_CLICK = 3;
 
-
     private static final String LOG_TAG = "MainActivity";
+
+    // This static context will be used in a static methods of this class
+    private static Context context = null;
 
     private BluetoothAdapter mBluetoothAdapter = null;
 
@@ -82,7 +82,6 @@ public class Main extends FragmentActivity implements
     // If this variable is not null, then the fragment will be switched in onPostResume().
     private Class<? extends Fragment> mNextFragmentClass = null;
 
-
     // The Handler that gets information back from the BluetoothService
     private final Handler mHandler = new Handler() {
         @Override
@@ -102,13 +101,11 @@ public class Main extends FragmentActivity implements
                     break;
                 case Constants.MESSAGE_WRITE:
                     String writeMessage = (String) msg.obj;
-                    Toast.makeText(getApplicationContext(), "Sending:\n" + writeMessage, Toast.LENGTH_LONG).show();
+                    debugToast("Sending:\n" + writeMessage, false);
                     break;
                 case Constants.MESSAGE_READ:
                     String readMessage = (String) msg.obj;
-
-                    Toast.makeText(getApplicationContext(), "Received:\n" + readMessage, Toast.LENGTH_LONG).show();
-
+                    debugToast("Received:\n" + readMessage, false);
                     if (mSyncWithDeviceThread != null && mSyncWithDeviceThread.isAlive()) {
                         mSyncWithDeviceThread.newIncomingMessage(readMessage);
                     } else {
@@ -118,22 +115,12 @@ public class Main extends FragmentActivity implements
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name
                     mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
-                    Toast.makeText(getApplicationContext(), "Connected to "
-                            + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
+                    debugToast("Connected to " + mConnectedDeviceName, false);
                     break;
                 case Constants.MESSAGE_TOAST:
                     final Toast toast = Toast.makeText(getApplicationContext(), msg.getData().getString(Constants.TOAST),
-                            Toast.LENGTH_SHORT);
+                            Toast.LENGTH_LONG);
                     toast.show();
-
-                    // Just dirty workaround to show a longer toast
-                    new CountDownTimer(3000, 1000)
-                    {
-
-                        public void onTick(long millisUntilFinished) {toast.show();}
-                        public void onFinish() {toast.show();}
-
-                    }.start();
                     break;
             }
         }
@@ -163,6 +150,8 @@ public class Main extends FragmentActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Initializing static context
+        Main.context = getApplicationContext();
 
         // Setup TabHost
         initializeTabHost(savedInstanceState);
@@ -585,7 +574,7 @@ public class Main extends FragmentActivity implements
                 mBluetoothAdapter.cancelDiscovery();
             }
             if (!mBluetoothAdapter.startDiscovery()) {
-                Toast.makeText(this, "Discovery initiation encountered an error", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Bluetooth discovery encountered an error", Toast.LENGTH_LONG).show();
                 return;
             }
 
@@ -621,7 +610,7 @@ public class Main extends FragmentActivity implements
                 // The assumption here is that when the flow is aborted, all the
                 // methods which should've been rerun can be discarded
                 mRerunMethodStack.clear();
-                Toast.makeText(this, "Default device is not set", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Default device is not set - aborting", Toast.LENGTH_LONG).show();
             }
         }
 
@@ -664,7 +653,7 @@ public class Main extends FragmentActivity implements
                 }
             }
 
-            mSyncWithDeviceThread = new SyncWithDeviceThread(this, mBluetoothService, mDBAdapter, mHandler);
+            mSyncWithDeviceThread = new SyncWithDeviceThread(mBluetoothService, mDBAdapter, mHandler);
             mSyncWithDeviceThread.start();
         }
 
@@ -885,6 +874,24 @@ public class Main extends FragmentActivity implements
 
     }
 
+    public static void debugToast(String message, boolean increaseDuration) {
+        if (ENABLE_DEBUG) {
+            final Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
+            toast.show();
 
+            // Just dirty workaround to show a longer toast
+            if (increaseDuration) {
+                new CountDownTimer(3000, 1000) {
+                    public void onTick(long millisUntilFinished) {
+                        toast.show();
+                    }
+
+                    public void onFinish() {
+                        toast.show();
+                    }
+                }.start();
+            }
+        }
+    }
 
 }

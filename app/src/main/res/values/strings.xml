@@ -41,8 +41,8 @@
     <string name="preference_clear_history_dialog_message">All history entries will be permanently deleted. Proceed?</string>
     <string name="preference_default_device_dialog_message_part1">Set</string>
     <string name="preference_default_device_dialog_message_part2">as the default device?</string>
-    <string name="preference_category_mother">Mother</string>
-    <string name="preference_category_baby">Baby</string>
+    <string name="preference_category_mother_title">Mother</string>
+    <string name="preference_category_baby_title">Baby</string>
     <string name="preference_mother_birth_date_key">preference_mother_birth_date</string>
 
 
