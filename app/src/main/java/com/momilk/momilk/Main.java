@@ -760,7 +760,7 @@ public class Main extends FragmentActivity implements
 
     @Override
     public void onPersonalDataClick() {
-        Toast.makeText(this, "under construction", Toast.LENGTH_LONG).show();
+        getFragment(PersonalDataFragment.class);
 
     }
 
