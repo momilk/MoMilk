@@ -24,6 +24,11 @@
             android:title="@string/preference_default_device_title"
             android:summary="TODO: show currently chosen device here"/>
 
+        <EditTextPreference
+            android:key="@string/preference_calibration_key"
+            android:title="@string/preference_calibration_title"
+            android:inputType="numberDecimal"/>
+
         <com.momilk.momilk.AutoSummaryUpdateListPreference
             android:key="@string/preference_language_key"
             android:title="@string/preference_language_title"

@@ -2,9 +2,13 @@ package com.momilk.momilk;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Message;
+import android.preference.Preference;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -41,17 +45,22 @@ public class SyncWithDeviceThread extends Thread {
     private ArrayList<DataPacket> mDataPackets;
     private final CustomDatabaseAdapter mDBAdapter;
     private final Handler mHandler;
+    private final SharedPreferences mPreferences;
+    private final Context mContext;
 
     private SyncState mSyncState;
     private boolean mCancelled;
 
-    public SyncWithDeviceThread(BluetoothService bluetoothService,
-                                CustomDatabaseAdapter dbAdapter, Handler handler) {
+    public SyncWithDeviceThread(BluetoothService bluetoothService, CustomDatabaseAdapter dbAdapter,
+                                Handler handler, SharedPreferences preferences, Context context) {
         mBluetoothService = bluetoothService;
         mInputBuffer = new ConcurrentLinkedQueue<String>();
         mDataPackets = new ArrayList<DataPacket>();
         mDBAdapter = dbAdapter;
         mHandler = handler;
+        mPreferences = preferences;
+        mContext = context;
+
         mSyncState = SyncState.IDLE;
         mCancelled = false;
 
@@ -190,7 +199,8 @@ public class SyncWithDeviceThread extends Thread {
             String msg = "Parsed:\n" + "Date: " + formattedDate + "\nIndex: " + index +"\nL/R: " +
                             leftOrRight + "\nDuration: " + duration + "\nAmount: " + amount +
                             "\n\u0394Roll: " + deltaRoll + "\n\u0394Tilt: " + deltaTilt;
-            Main.debugToast(msg, true);
+            //Main.debugToast(msg, true);
+            Log.d(LOG_TAG, msg);
 
             DataPacket packet = new DataPacket();
             packet.mIndex = Integer.valueOf(index);
@@ -200,6 +210,20 @@ public class SyncWithDeviceThread extends Thread {
             packet.mAmount = Integer.valueOf(amount);
             packet.mDeltaRoll = Integer.valueOf(deltaRoll);
             packet.mDeltaTilt = Integer.valueOf(deltaTilt);
+
+            // Calibrating the value of amount based on the value provided
+            // in the respective preference
+            String calibrationFactorString = mPreferences.
+                    getString(mContext.getString(R.string.preference_calibration_key), "1");
+
+
+            try {
+                Float calibrationFactorFloat = Float.parseFloat(calibrationFactorString);
+                packet.mAmount *= calibrationFactorFloat;
+            } catch (NumberFormatException e) {
+                //Main.debugToast("Could not parse calibration factor as float", true);
+                Log.e(LOG_TAG, "Could not parse calibration factor as float");
+            }
 
             mDataPackets.add(packet);
 

@@ -44,6 +44,8 @@ public class Main extends FragmentActivity implements
         NewMeasurementFragment.NewMeasurementFragmentCallback,
         SettingsFragment.SettingsFragmentCallback {
 
+    public static String PREFERENCE_FILE;
+
     // Set this to true in order access various debug features of the app (through ActionBar)
     private static final boolean ENABLE_DEBUG = false;
 
@@ -56,6 +58,7 @@ public class Main extends FragmentActivity implements
 
     // This static context will be used in a static methods of this class
     private static Context context = null;
+
 
     private BluetoothAdapter mBluetoothAdapter = null;
 
@@ -153,6 +156,8 @@ public class Main extends FragmentActivity implements
         // Initializing static context
         Main.context = getApplicationContext();
 
+        Main.PREFERENCE_FILE = getPackageName() + "_pref";
+
         // Setup TabHost
         initializeTabHost(savedInstanceState);
 
@@ -217,9 +222,9 @@ public class Main extends FragmentActivity implements
                 mDBAdapter.clearTable();
                 return true;
             case R.id.action_reset_default_device:
-                getPreferences(FragmentActivity.MODE_PRIVATE).edit().
+                getSharedPreferences(Main.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE).edit().
                         remove(getString(R.string.preference_default_device_address_key)).commit();
-                getPreferences(FragmentActivity.MODE_PRIVATE).edit().
+                getSharedPreferences(Main.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE).edit().
                         remove(getString(R.string.preference_default_device_name_key)).commit();
             default:
                 return super.onOptionsItemSelected(item);
@@ -586,32 +591,26 @@ public class Main extends FragmentActivity implements
 
 
     private void connectToDefaultDevice() {
-
-        if (!mBluetoothAdapter.isEnabled()) {
+        SharedPreferences sharedPref = getSharedPreferences(Main.PREFERENCE_FILE,
+                FragmentActivity.MODE_PRIVATE);
+        String deviceAddressKey = getString(R.string.preference_default_device_address_key);
+        if (!sharedPref.contains(deviceAddressKey)) {
+            // The assumption here is that when the flow is aborted, all the
+            // methods which should've been rerun can be discarded
+            mRerunMethodStack.clear();
+            Toast.makeText(this, "Default device is not set - aborting", Toast.LENGTH_LONG).show();
+        } else if (!mBluetoothAdapter.isEnabled()) {
             // This will cause this method to be rerun during onActivityResult execution
             registerForRerun(RERUN_CONNECT_TO_DEFAULT_DEVICE);
 
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, Constants.REQUEST_ENABLE_BT);
-
         } else {
-
             if (mBluetoothService == null) {
                 setupBluetoothService();
             }
-
-            SharedPreferences sharedPref = getPreferences(FragmentActivity.MODE_PRIVATE);
-            String deviceAddressKey = getString(R.string.preference_default_device_address_key);
-
-            if (sharedPref.contains(deviceAddressKey)) {
-                mBluetoothService.connect(mBluetoothAdapter.getRemoteDevice(sharedPref.getString(deviceAddressKey, null)), true);
-            } else {
-
-                // The assumption here is that when the flow is aborted, all the
-                // methods which should've been rerun can be discarded
-                mRerunMethodStack.clear();
-                Toast.makeText(this, "Default device is not set - aborting", Toast.LENGTH_LONG).show();
-            }
+            mBluetoothService.connect(mBluetoothAdapter.
+                    getRemoteDevice(sharedPref.getString(deviceAddressKey, null)), true);
         }
 
     }
@@ -653,7 +652,8 @@ public class Main extends FragmentActivity implements
                 }
             }
 
-            mSyncWithDeviceThread = new SyncWithDeviceThread(mBluetoothService, mDBAdapter, mHandler);
+            mSyncWithDeviceThread = new SyncWithDeviceThread(mBluetoothService, mDBAdapter,
+                    mHandler, getSharedPreferences(Main.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE), getApplicationContext());
             mSyncWithDeviceThread.start();
         }
 
@@ -688,7 +688,7 @@ public class Main extends FragmentActivity implements
             public void onClick(DialogInterface dialog, int which) {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
-                        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences sharedPref = getSharedPreferences(Main.PREFERENCE_FILE, Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPref.edit();
                         editor.putString(getString(R.string.preference_default_device_name_key), device.getName());
                         editor.putString(getString(R.string.preference_default_device_address_key), device.getAddress());

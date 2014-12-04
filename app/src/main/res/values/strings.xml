@@ -44,6 +44,8 @@
     <string name="preference_category_mother_title">Mother</string>
     <string name="preference_category_baby_title">Baby</string>
     <string name="preference_mother_birth_date_key">preference_mother_birth_date</string>
+    <string name="preference_calibration_key">preference_calibration</string>
+    <string name="preference_calibration_title">Calibration</string>
 
 
 </resources>

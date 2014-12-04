@@ -8,6 +8,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.preference.PreferenceFragment;
 import android.util.AttributeSet;
@@ -24,13 +25,18 @@ public class SettingsFragment extends PreferenceFragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        PreferenceManager manager = getPreferenceManager();
+        manager.setSharedPreferencesName(Main.PREFERENCE_FILE);
+
         addPreferencesFromResource(R.xml.preferences);
 
         initPreferences();
     }
 
     private void initPreferences() {
-        SharedPreferences sharedPref = getActivity().getPreferences(FragmentActivity.MODE_PRIVATE);
+        SharedPreferences sharedPref = getActivity().getSharedPreferences(Main.PREFERENCE_FILE,
+                FragmentActivity.MODE_PRIVATE);
 
         Preference preference;
 
@@ -39,7 +45,8 @@ public class SettingsFragment extends PreferenceFragment implements
         preference.setOnPreferenceClickListener(this);
 
         // Default device
-        preference = (Preference) findPreference(getResources().getString(R.string.preference_default_device_key));
+        preference = (Preference) findPreference(getResources().
+                getString(R.string.preference_default_device_key));
         preference.setOnPreferenceClickListener(this);
         preference.setSummary(getString(R.string.preference_summary_current_text) + " " +
                 sharedPref.getString(getString(R.string.preference_default_device_name_key), "-"));
