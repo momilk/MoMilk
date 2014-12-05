@@ -41,18 +41,17 @@ public class SettingsFragment extends PreferenceFragment implements
         Preference preference;
 
         // Personal data
-        preference = (Preference) findPreference(getResources().getString(R.string.preference_personal_data_key));
+        preference = (Preference) findPreference("preference_personal_data");
         preference.setOnPreferenceClickListener(this);
 
         // Default device
-        preference = (Preference) findPreference(getResources().
-                getString(R.string.preference_default_device_key));
+        preference = (Preference) findPreference("preference_default_device");
         preference.setOnPreferenceClickListener(this);
-        preference.setSummary(getString(R.string.preference_summary_current_text) + " " +
-                sharedPref.getString(getString(R.string.preference_default_device_name_key), "-"));
+        preference.setSummary(
+                sharedPref.getString("preference_default_device_name", ""));
 
         // Clear history
-        preference = (Preference) findPreference(getResources().getString(R.string.preference_clear_history_key));
+        preference = (Preference) findPreference("preference_clear_history");
         preference.setOnPreferenceClickListener(this);
 
     }
@@ -76,13 +75,13 @@ public class SettingsFragment extends PreferenceFragment implements
     public boolean onPreferenceClick(Preference preference) {
         String key = preference.getKey();
 
-        if (key.equals(getResources().getString(R.string.preference_personal_data_key))) {
+        if (key.equals("preference_personal_data")) {
             mCallback.onPersonalDataClick();
             return true;
-        } else if (key.equals(getResources().getString(R.string.preference_default_device_key))) {
+        } else if (key.equals("preference_default_device")) {
             mCallback.onSetDefaultDeviceClick();
             return true;
-        } else if (key.equals(getResources().getString(R.string.preference_clear_history_key))) {
+        } else if (key.equals("preference_clear_history")) {
             mCallback.onHistoryClearClick();
             return true;
         } else {

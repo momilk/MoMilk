@@ -47,7 +47,7 @@ public class Main extends FragmentActivity implements
     public static String PREFERENCE_FILE;
 
     // Set this to true in order access various debug features of the app (through ActionBar)
-    private static final boolean ENABLE_DEBUG = false;
+    private static final boolean ENABLE_DEBUG = true;
 
     private static final int RERUN_DISCOVER_BLUETOOTH_DEVICES = 0;
     private static final int RERUN_ON_SYNC_CLICK = 1;
@@ -76,14 +76,10 @@ public class Main extends FragmentActivity implements
 
     private CustomDatabaseAdapter mDBAdapter;
 
-    // These variables alongside RERUN_... constants will be used in order to get back to methods
+    // These variables alongside RERUN_... constants will be used in order to rerun methods
     // that have dependencies on either async events or user actions.
     private Stack<Integer> mRerunMethodStack;
-
-    // This variable will be set if there is need to switch a fragment when
-    // commiting FragmentTransaction will cause IllegalStateException due to state loss.
-    // If this variable is not null, then the fragment will be switched in onPostResume().
-    private Class<? extends Fragment> mNextFragmentClass = null;
+    private boolean mRerunMethod = false;
 
     // The Handler that gets information back from the BluetoothService
     private final Handler mHandler = new Handler() {
@@ -205,6 +201,15 @@ public class Main extends FragmentActivity implements
         }
     }
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+
+        if (mRerunMethod) {
+            mRerunMethod = false;
+            rerunMethod();
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -223,9 +228,9 @@ public class Main extends FragmentActivity implements
                 return true;
             case R.id.action_reset_default_device:
                 getSharedPreferences(Main.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE).edit().
-                        remove(getString(R.string.preference_default_device_address_key)).commit();
+                        remove("preference_default_device_address").commit();
                 getSharedPreferences(Main.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE).edit().
-                        remove(getString(R.string.preference_default_device_name_key)).commit();
+                        remove("preference_default_device_name").commit();
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -236,7 +241,7 @@ public class Main extends FragmentActivity implements
         switch (requestCode) {
             case Constants.REQUEST_ENABLE_BT:
                 if (resultCode == Activity.RESULT_OK) {
-                    rerunMethod();
+                    mRerunMethod = true;
                 } else {
                     // The assumption here is that when the flow is aborted, all the
                     // methods which should've been rerun can be discarded
@@ -593,7 +598,7 @@ public class Main extends FragmentActivity implements
     private void connectToDefaultDevice() {
         SharedPreferences sharedPref = getSharedPreferences(Main.PREFERENCE_FILE,
                 FragmentActivity.MODE_PRIVATE);
-        String deviceAddressKey = getString(R.string.preference_default_device_address_key);
+        String deviceAddressKey = "preference_default_device_address";
         if (!sharedPref.contains(deviceAddressKey)) {
             // The assumption here is that when the flow is aborted, all the
             // methods which should've been rerun can be discarded
@@ -690,8 +695,8 @@ public class Main extends FragmentActivity implements
                     case DialogInterface.BUTTON_POSITIVE:
                         SharedPreferences sharedPref = getSharedPreferences(Main.PREFERENCE_FILE, Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putString(getString(R.string.preference_default_device_name_key), device.getName());
-                        editor.putString(getString(R.string.preference_default_device_address_key), device.getAddress());
+                        editor.putString("preference_default_device_name", device.getName());
+                        editor.putString("preference_default_device_address", device.getAddress());
                         editor.commit();
                         // Show the default settings fragment after device has been chosen
                         getFragment(SettingsFragment.class);

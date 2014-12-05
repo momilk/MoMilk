@@ -25,27 +25,21 @@
     <!--This section contains strings used in Preferences (Settings)-->
     <string name="preference_category_system">System</string>
     <string name="preference_category_personal_data">Personal data</string>
-    <string name="preference_personal_data_key">preference_personal_data</string>
-    <string name="preference_personal_data_title">Edit</string>
-    <string name="preference_personal_data_summary">Edit mother\'s and baby\'s personal data</string>
-    <string name="preference_default_device_key">preference_default_device</string>
+    <string name="preference_personal_data_title">Edit personal data</string>
     <string name="preference_default_device_title">Bluetooth device</string>
-    <string name="preference_summary_current_text">Current:</string>
-    <string name="preference_default_device_name_key">preference_default_device_name</string>
-    <string name="preference_default_device_address_key">preference_default_device_address</string>
-    <string name="preference_language_key">preference_language</string>
     <string name="preference_language_title">Language</string>
     <string name="discovered_devices_txt">Discovered devices:</string>
-    <string name="preference_clear_history_key">preference_clear_history</string>
     <string name="preference_clear_history_title">Clear history</string>
     <string name="preference_clear_history_dialog_message">All history entries will be permanently deleted. Proceed?</string>
     <string name="preference_default_device_dialog_message_part1">Set</string>
     <string name="preference_default_device_dialog_message_part2">as the default device?</string>
     <string name="preference_category_mother_title">Mother</string>
     <string name="preference_category_baby_title">Baby</string>
-    <string name="preference_mother_birth_date_key">preference_mother_birth_date</string>
-    <string name="preference_calibration_key">preference_calibration</string>
     <string name="preference_calibration_title">Calibration</string>
+    <string name="preference_birth_date_title">Birth date</string>
+    <string name="preference_mother_weigth_title">Weigth</string>
+    <string name="preference_mother_bra_size_title">Bra size</string>
+    <string name="preference_baby_weigth_title">Birth weigth</string>
 
 
 </resources>

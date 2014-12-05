@@ -46,15 +46,19 @@ import android.widget.DatePicker;
  */
 public class DatePreference extends DialogPreference implements
         DatePicker.OnDateChangedListener {
+
     private String dateString;
     private String changedValueCanBeNull;
     private DatePicker datePicker;
+
     public DatePreference(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
+
     public DatePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
+
     /**
      * Produces a DatePicker set to the date produced by {@link #getDate()}. When
      * overriding be sure to call the super.
@@ -64,6 +68,7 @@ public class DatePreference extends DialogPreference implements
     @Override
     protected View onCreateDialogView() {
         this.datePicker = new DatePicker(getContext());
+        this.datePicker.setCalendarViewShown(false);
         Calendar calendar = getDate();
         datePicker.init(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH), this);

@@ -214,7 +214,7 @@ public class SyncWithDeviceThread extends Thread {
             // Calibrating the value of amount based on the value provided
             // in the respective preference
             String calibrationFactorString = mPreferences.
-                    getString(mContext.getString(R.string.preference_calibration_key), "1");
+                    getString("preference_calibration", "1");
 
 
             try {

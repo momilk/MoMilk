@@ -25,7 +25,7 @@ public class AutoSummaryUpdateListPreference extends ListPreference {
     @Override
     public CharSequence getSummary() {
         final CharSequence entry = getEntry();
-        return getContext().getString(R.string.preference_summary_current_text) + " " + entry;
+        return entry;
     }
 
     @Override
