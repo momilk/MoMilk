@@ -51,6 +51,8 @@ public class SyncWithDeviceThread extends Thread {
     private SyncState mSyncState;
     private boolean mCancelled;
 
+    private long mStartTime;
+
     public SyncWithDeviceThread(BluetoothService bluetoothService, CustomDatabaseAdapter dbAdapter,
                                 Handler handler, SharedPreferences preferences, Context context) {
         mBluetoothService = bluetoothService;
@@ -64,20 +66,29 @@ public class SyncWithDeviceThread extends Thread {
         mSyncState = SyncState.IDLE;
         mCancelled = false;
 
+        mStartTime = System.currentTimeMillis();
+
     }
 
     @Override
     public void run() {
 
-        while (!isCancelled()) {
+        while (true) {
+
+            if (isCancelled()) {
+                showToastInActivity("Sync cancelled");
+                setSyncState(SyncState.DONE);
+            }
+            if (System.currentTimeMillis() > mStartTime + 1000*Constants.SYNC_TIMEOUT_SEC) {
+                showToastInActivity("Sync cancelled: timeout");
+                setSyncState(SyncState.DONE);
+            }
+
             switch(getSyncState()) {
 
                 case IDLE:
-                    if (sendMessage(composeDateSyncMessage())) {
-                        setSyncState(SyncState.WAIT_FOR_SESSION_START);
-                    } else {
-                        setSyncState(SyncState.DONE);
-                    }
+                    sendMessage(composeDateSyncMessage());
+                    setSyncState(SyncState.WAIT_FOR_SESSION_START);
                     break;
 
                 case WAIT_FOR_SESSION_START:
@@ -117,16 +128,11 @@ public class SyncWithDeviceThread extends Thread {
 
                 case SESSION_SUCCESSFULL:
                     storeReceivedPackets();
-
                     // Send a success message back to the Activity
-                    Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
-                    Bundle bundle = new Bundle();
-                    bundle.putString(Constants.TOAST, "Sync complete: " +
+                    showToastInActivity("Sync complete: " +
                             Integer.toString(mDataPackets.size()) + " new entries");
-                    msg.setData(bundle);
-                    mHandler.sendMessage(msg);
-
-                    return;
+                    setSyncState(SyncState.DONE);
+                    break;
                 case SESSION_UNSUCCESSFULL:
                     // The packets will be re-transmitted
                     discardReceivedPackets();
@@ -135,8 +141,6 @@ public class SyncWithDeviceThread extends Thread {
                 case DONE:
                     return;
             }
-
-
         }
 
     }
@@ -150,13 +154,8 @@ public class SyncWithDeviceThread extends Thread {
         // Check that we're actually connected before trying anything
         if (mBluetoothService.getState() != BluetoothService.STATE_CONNECTED) {
             // Send a failure message back to the Activity
-            Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
-            Bundle bundle = new Bundle();
-            bundle.putString(Constants.TOAST, "Sync failed: not connected");
-            msg.setData(bundle);
-            mHandler.sendMessage(msg);
-
-            setSyncState(SyncState.DONE);
+            showToastInActivity("Bluetooth is disconnected");
+            cancel();
             return false;
         }
         // Check that there's actually something to send
@@ -280,6 +279,14 @@ public class SyncWithDeviceThread extends Thread {
 
     private synchronized SyncState getSyncState() {
         return mSyncState;
+    }
+
+    private void showToastInActivity(String message) {
+        Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
+        Bundle bundle = new Bundle();
+        bundle.putString(Constants.TOAST, message);
+        msg.setData(bundle);
+        mHandler.sendMessage(msg);
     }
 
     private class DataPacket {

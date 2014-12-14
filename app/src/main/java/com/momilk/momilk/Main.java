@@ -47,7 +47,7 @@ public class Main extends FragmentActivity implements
     public static String PREFERENCE_FILE;
 
     // Set this to true in order access various debug features of the app (through ActionBar)
-    private static final boolean ENABLE_DEBUG = true;
+    private static final boolean ENABLE_DEBUG = false;
 
     private static final int RERUN_DISCOVER_BLUETOOTH_DEVICES = 0;
     private static final int RERUN_ON_SYNC_CLICK = 1;
@@ -79,7 +79,6 @@ public class Main extends FragmentActivity implements
     // These variables alongside RERUN_... constants will be used in order to rerun methods
     // that have dependencies on either async events or user actions.
     private Stack<Integer> mRerunMethodStack;
-    private boolean mRerunMethod = false;
 
     // The Handler that gets information back from the BluetoothService
     private final Handler mHandler = new Handler() {
@@ -126,19 +125,39 @@ public class Main extends FragmentActivity implements
     };
 
 
-    // Create a BroadcastReceiver for ACTION_FOUND
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
             // When discovery finds a device
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Get the BluetoothDevice object from the Intent
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                DevicesListFragment devicesListFragment =
-                        (DevicesListFragment) getFragment(DevicesListFragment.class);
-                devicesListFragment.add(device);
+            if (action.equals(BluetoothDevice.ACTION_FOUND)) {
+                FragmentContainer fc = (FragmentContainer) getSupportFragmentManager()
+                        .findFragmentById(android.R.id.tabcontent);
 
+                // Update the list of devices as long as DevicesListFragment is still shown
+                if (fc.getChildFragmentManager().findFragmentById(R.id.fragment_content) instanceof
+                        DevicesListFragment) {
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    DevicesListFragment devicesListFragment = (DevicesListFragment)
+                            fc.getChildFragmentManager().findFragmentById(R.id.fragment_content);
+                    devicesListFragment.add(device);
+                }
+            }
+            else if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                        BluetoothAdapter.ERROR);
+                switch (state) {
+                    case BluetoothAdapter.STATE_OFF:
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        cancelBluetoothActivities();
+                        break;
+                    case BluetoothAdapter.STATE_ON:
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     };
@@ -183,16 +202,9 @@ public class Main extends FragmentActivity implements
         super.onSaveInstanceState(outState);
     }
 
-
     @Override
-    protected void onStop() {
+    protected void onPause() {
         super.onPause();
-
-        // Stop the Bluetooth services
-        if (mBluetoothService != null) mBluetoothService.stop();
-        if(mBluetoothAdapter != null) {
-            mBluetoothAdapter.cancelDiscovery();
-        }
 
         try {
             this.unregisterReceiver(mReceiver);
@@ -202,13 +214,20 @@ public class Main extends FragmentActivity implements
     }
 
     @Override
+    protected void onStop() {
+        cancelBluetoothActivities();
+    }
+
+    @Override
     protected void onPostResume() {
         super.onPostResume();
 
-        if (mRerunMethod) {
-            mRerunMethod = false;
-            rerunMethod();
-        }
+        // Register the BroadcastReceiver
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(mReceiver, filter);
+
+        rerunMethod();
     }
 
     @Override
@@ -240,9 +259,7 @@ public class Main extends FragmentActivity implements
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case Constants.REQUEST_ENABLE_BT:
-                if (resultCode == Activity.RESULT_OK) {
-                    mRerunMethod = true;
-                } else {
+                if (resultCode != Activity.RESULT_OK) {
                     // The assumption here is that when the flow is aborted, all the
                     // methods which should've been rerun can be discarded
                     mRerunMethodStack.clear();
@@ -263,7 +280,8 @@ public class Main extends FragmentActivity implements
 
 
     /*
-    This metod pops an index from the top of rerun stack and executes an appropriate method
+    This metod pops an index from the top of rerun stack and executes the appropriate method.
+    If the stack is empty the call to this method does nothing.
      */
     private void rerunMethod() {
         if (!mRerunMethodStack.empty()) {
@@ -271,30 +289,33 @@ public class Main extends FragmentActivity implements
             switch (index) {
                 case RERUN_DISCOVER_BLUETOOTH_DEVICES:
                     discoverBluetoothDevices();
+                    Log.d(LOG_TAG, "reruning discoverBluetoothDevices()");
                     break;
                 case RERUN_ON_SYNC_CLICK:
                     onSyncClick();
+                    Log.d(LOG_TAG, "reruning onSyncClick()");
                     break;
                 case RERUN_CONNECT_TO_DEFAULT_DEVICE:
                     connectToDefaultDevice();
+                    Log.d(LOG_TAG, "reruning connectToDefaultDevice()");
                     break;
                 case RERUN_ON_SET_DEFAULT_DEVICE_CLICK:
                     onSetDefaultDeviceClick();
+                    Log.d(LOG_TAG, "reruning onSetDefaultDeviceClick()");
                     break;
                 default:
                     break;
             }
         } else {
-            Log.e(LOG_TAG, "rerun was requested, but the method to rerun wasn't set");
+            Log.d(LOG_TAG, "rerun stack is empty");
         }
     }
+
     // -------------------------------------------------------------------------------------------
     //
     // Tabs management logic (classes and methods)
     //
     // -------------------------------------------------------------------------------------------
-
-
 
     private void initializeTabHost(Bundle args) {
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
@@ -585,12 +606,8 @@ public class Main extends FragmentActivity implements
             }
             if (!mBluetoothAdapter.startDiscovery()) {
                 Toast.makeText(this, "Bluetooth discovery encountered an error", Toast.LENGTH_LONG).show();
-                return;
             }
 
-            // Register the BroadcastReceiver
-            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(mReceiver, filter);
         }
     }
 
@@ -618,6 +635,15 @@ public class Main extends FragmentActivity implements
                     getRemoteDevice(sharedPref.getString(deviceAddressKey, null)), true);
         }
 
+    }
+
+    private void cancelBluetoothActivities() {
+        if (mBluetoothService != null)
+            mBluetoothService.stop();
+        if (mBluetoothAdapter != null)
+            mBluetoothAdapter.cancelDiscovery();
+        if (mSyncWithDeviceThread != null)
+            mSyncWithDeviceThread.cancel();
     }
 
 

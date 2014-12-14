@@ -11,6 +11,9 @@ import java.util.Map;
  */
 public class Constants {
 
+    // Sync session timeout in seconds
+    public static final int SYNC_TIMEOUT_SEC = 5;
+
     // Request codes
     public static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
     public static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
