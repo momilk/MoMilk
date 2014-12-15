@@ -84,6 +84,7 @@ public class Constants {
         map.put(HistoryFragment.class, HISTORY_LIST_TAB_TAG);
         map.put(HistoryClockFragment.class, HISTORY_CLOCK_TAB_TAG);
         map.put(SettingsFragment.class, SETTINGS_TAB_TAG);
+        map.put(PersonalDataFragment.class, SETTINGS_TAB_TAG);
         map.put(DevicesListFragment.class, SETTINGS_TAB_TAG);
         map.put(ExtrasFragment.class, EXTRAS_TAB_TAG);
         FRAGMENT_TO_TAB_MAP = Collections.unmodifiableMap(map);

@@ -216,6 +216,7 @@ public class Main extends FragmentActivity implements
     @Override
     protected void onStop() {
         cancelBluetoothActivities();
+        super.onStop();
     }
 
     @Override
