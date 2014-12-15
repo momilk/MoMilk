@@ -116,9 +116,6 @@ public class HistoryFragment extends Fragment{
         mAdapter = new HistoryArrayAdapter(getActivity(), R.layout.history_item_row);
         mHistoryListView.setAdapter(mAdapter);
 
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
-                new IntentFilter(Constants.ACTION_NOTIFY_DB_CHANGED));
-
         showLastHistory();
 
         return view;
@@ -140,6 +137,19 @@ public class HistoryFragment extends Fragment{
 
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
+                new IntentFilter(Constants.ACTION_NOTIFY_DB_CHANGED));
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
+    }
 
     public void showLastHistory() {
 
