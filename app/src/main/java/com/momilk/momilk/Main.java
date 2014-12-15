@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -31,6 +32,7 @@ import android.widget.TabHost;
 import android.widget.Toast;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
@@ -229,6 +231,48 @@ public class Main extends FragmentActivity implements
         registerReceiver(mReceiver, filter);
 
         rerunMethod();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // This implementation was used because there is a known bug with backstack management
+        // of nested fragments: https://code.google.com/p/android/issues/detail?id=40323
+
+        // This implementation was taken from StackOverflow:
+        // http://stackoverflow.com/questions/13418436/android-4-2-back-stack-behaviour-with-nested-fragments
+
+        // It is an overkill in our case because we know the depth of our fragments hierarchy,
+        // but, nevertheless, I decided to use it because it is a beautiful piece of code :)
+
+        FragmentManager fm = getSupportFragmentManager();
+        if (traverseBackStackRecursively(fm)) {
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    private boolean traverseBackStackRecursively(FragmentManager fm) {
+        if (fm != null) {
+            if (fm.getBackStackEntryCount() > 0) {
+                fm.popBackStack();
+                return true;
+            }
+
+            List<Fragment> fragList = fm.getFragments();
+            if (fragList != null && fragList.size() > 0) {
+                for (Fragment frag : fragList) {
+                    if (frag == null) {
+                        continue;
+                    }
+                    if (frag.isVisible()) {
+                        if (traverseBackStackRecursively(frag.getChildFragmentManager())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.momilk.momilk;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,14 +23,14 @@ public class FragmentContainer extends Fragment {
 
     public static final String PARAM_CONTENT_FRAGMENT = "param_content_fragment";
 
-    public static final String EXTRA_DEFAULT_FRAGMENT = "default_fragment";
+    public static final String EXTRA_DEFAULT_FRAGMENT_NAME = "default_fragment";
 
 
     public static FragmentContainer newInstance(String class_name) {
         FragmentContainer container = new FragmentContainer();
 
         Bundle bundle = new Bundle(1);
-        bundle.putString(EXTRA_DEFAULT_FRAGMENT, class_name);
+        bundle.putString(EXTRA_DEFAULT_FRAGMENT_NAME, class_name);
         container.setArguments(bundle);
 
         return container;
@@ -62,34 +63,41 @@ public class FragmentContainer extends Fragment {
 
         Fragment curFrag = getChildFragmentManager().findFragmentById(R.id.fragment_content);
 
-        if (curFrag != null && claz.isInstance(curFrag)) {
-            // The currently shown fragment is the same as the new one - nothing to do
-            Log.d("FragmentContainer", "the fragment " + claz.getSimpleName() + " is already shown");
-            return curFrag;
-        } else {
-            FragmentTransaction tx = getChildFragmentManager().beginTransaction();
+        FragmentTransaction tx = getChildFragmentManager().beginTransaction();
 
-            if (curFrag != null) {
-                // Save the state
+        if (curFrag != null) {
+            if (claz.isInstance(curFrag)) {
+                // The currently shown fragment is the same as the new one - nothing to do
+                Log.d("FragmentContainer", "the fragment " + claz.getSimpleName() + " is already shown");
+                return curFrag;
+            }
+
+            if (!claz.getName().equals(getArguments().getString(EXTRA_DEFAULT_FRAGMENT_NAME))) {
+                // Add fragment transaction to the back stack only if it is not the defualt
+                // fragment which is being loaded
                 tx.addToBackStack(curFrag.getClass().getSimpleName());
+            } else {
+                // Clear back stack if the default fragment is being loaded
+                getChildFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             }
+        }
 
-            // TODO: add these effects to any fragment change, not just the creation of a new fragment
-            //tx.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 
-            Log.d("FragmentContainer", "creating new  " + claz.getSimpleName());
-            // Change to a new fragment
-            try {
-                Fragment newFragment = claz.newInstance();
-                newFragment.setArguments(args);
-                tx.replace(R.id.fragment_content, newFragment, claz.getClass().getSimpleName());
-                tx.commit();
-                getChildFragmentManager().executePendingTransactions();
-                return newFragment;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
+        // TODO: add these effects to any fragment change, not just the creation of a new fragment
+        //tx.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+
+        Log.d("FragmentContainer", "creating new  " + claz.getSimpleName());
+        // Change to a new fragment
+        try {
+            Fragment newFragment = claz.newInstance();
+            newFragment.setArguments(args);
+            tx.replace(R.id.fragment_content, newFragment, claz.getClass().getSimpleName());
+            tx.commit();
+            getChildFragmentManager().executePendingTransactions();
+            return newFragment;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -103,7 +111,7 @@ public class FragmentContainer extends Fragment {
         Class<?> claz = null;
 
         try {
-            claz = Class.forName(getArguments().getString(EXTRA_DEFAULT_FRAGMENT));
+            claz = Class.forName(getArguments().getString(EXTRA_DEFAULT_FRAGMENT_NAME));
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
