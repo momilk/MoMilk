@@ -32,6 +32,7 @@ public class HomeFragment extends Fragment {
         Button syncBtn = (Button) view.findViewById(R.id.sync_btn);
 
         syncBtn.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
                 mCallback.onSyncClick();

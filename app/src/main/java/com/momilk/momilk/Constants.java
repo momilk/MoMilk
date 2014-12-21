@@ -104,4 +104,5 @@ public class Constants {
         map.put(EXTRAS_TAB_TAG, R.drawable.ic_extras_tab);
         TAB_ICON_MAP = Collections.unmodifiableMap(map);
     }
+
 }

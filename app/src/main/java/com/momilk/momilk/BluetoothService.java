@@ -22,6 +22,9 @@ package com.momilk.momilk;
  * connections with other devices. It has a thread that listens for
  * incoming connections, a thread for connecting with a device, and a
  * thread for performing data transmissions when connected.
+ *
+ * This calss was derived from the implementation of BluetoothChat android
+ * sample application
  */
 public class BluetoothService {
     // Debugging
@@ -220,30 +223,13 @@ public class BluetoothService {
      * Indicate that the connection attempt failed and notify the UI Activity.
      */
     private void connectionFailed(String deviceName) {
+        setState(STATE_NONE);
         // Send a failure message back to the Activity
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
         Bundle bundle = new Bundle();
         bundle.putString(Constants.TOAST, "Unable to connect to " + deviceName);
         msg.setData(bundle);
         mHandler.sendMessage(msg);
-
-        // Start the service over to restart listening mode
-        BluetoothService.this.start();
-    }
-
-    /**
-     * Indicate that the connection was lost and notify the UI Activity.
-     */
-    private void connectionLost() {
-        // Send a failure message back to the Activity
-        Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
-        Bundle bundle = new Bundle();
-        bundle.putString(Constants.TOAST, "Device connection was lost");
-        msg.setData(bundle);
-        mHandler.sendMessage(msg);
-
-        // Start the service over to restart listening mode
-        BluetoothService.this.start();
     }
 
     /**
@@ -459,9 +445,6 @@ public class BluetoothService {
 
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
-                    connectionLost();
-                    // Start the service over to restart listening mode
-                    BluetoothService.this.start();
                     break;
                 }
             }

@@ -46,7 +46,7 @@ public class Main extends FragmentActivity implements
         NewMeasurementFragment.NewMeasurementFragmentCallback,
         SettingsFragment.SettingsFragmentCallback {
 
-    public static String PREFERENCE_FILE;
+    public static String PREFERENCE_FILE = null;
 
     // Set this to true in order access various debug features of the app (through ActionBar)
     private static final boolean ENABLE_DEBUG = false;
@@ -65,6 +65,7 @@ public class Main extends FragmentActivity implements
     private BluetoothAdapter mBluetoothAdapter = null;
 
     private BluetoothService mBluetoothService = null;
+    private int mBluetoothServiceState = BluetoothService.STATE_NONE;
 
     private SyncWithDeviceThread mSyncWithDeviceThread = null;
 
@@ -96,8 +97,14 @@ public class Main extends FragmentActivity implements
                             break;
                         case BluetoothService.STATE_LISTEN:
                         case BluetoothService.STATE_NONE:
+                            // If the previous state was CONNECTING then the connection was unsuccessful
+                            // and we need to clear the rerun stack
+                            if (mBluetoothServiceState == BluetoothService.STATE_CONNECTING) {
+                                mRerunMethodStack.clear();
+                            }
                             break;
                     }
+                    mBluetoothServiceState = msg.arg1;
                     break;
                 case Constants.MESSAGE_WRITE:
                     String writeMessage = (String) msg.obj;
@@ -171,17 +178,16 @@ public class Main extends FragmentActivity implements
         setContentView(R.layout.activity_main);
 
         // Initializing static context
-        Main.context = getApplicationContext();
+        if (Main.context == null) {
+            Main.context = getApplicationContext();
+        }
 
-        Main.PREFERENCE_FILE = getPackageName() + "_pref";
+        if (Main.PREFERENCE_FILE == null) {
+            Main.PREFERENCE_FILE = getPackageName() + "_pref";
+        }
 
         // Setup TabHost
         initializeTabHost(savedInstanceState);
-
-        if (savedInstanceState != null) {
-            //set the tab as per the saved state
-            mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));
-        }
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -362,17 +368,22 @@ public class Main extends FragmentActivity implements
     //
     // -------------------------------------------------------------------------------------------
 
-    private void initializeTabHost(Bundle args) {
+    private void initializeTabHost(Bundle savedInstanceState) {
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
 
         // Create TabInfo's for all tabs
         for (String tabTag : Constants.DEFAULT_TAB_FRAGMENT_MAP.keySet()) {
-            mMapTabInfo.put(tabTag, new TabInfo(tabTag, args));
+            mMapTabInfo.put(tabTag, new TabInfo(tabTag));
         }
 
-        // Default to home tab
-        onTabChanged(Constants.HOME_TAB_TAG);
+        if (savedInstanceState != null) {
+            // Set the tab as per the saved state
+            onTabChanged(savedInstanceState.getString("tab"));
+        } else {
+            // Default to home tab
+            onTabChanged(Constants.HOME_TAB_TAG);
+        }
 
         mTabHost.setOnTabChangedListener(this);
     }
@@ -421,6 +432,7 @@ public class Main extends FragmentActivity implements
     This static method is used in order to add a new tab to the app
      */
     private static void addTab(Main activity, FragmentTabHost tabHost, TabHost.TabSpec tabSpec, TabInfo tabInfo) {
+
         // Attach a Tab view factory to the spec
         tabSpec.setContent(activity.new TabFactory(activity));
         String tag = tabSpec.getTag();
@@ -705,8 +717,15 @@ public class Main extends FragmentActivity implements
 
     }
 
+
     @Override
     public void onSyncClick() {
+
+        if ((mSyncWithDeviceThread != null && mSyncWithDeviceThread.isAlive()) ||
+                mRerunMethodStack.contains(Integer.valueOf(RERUN_ON_SYNC_CLICK))) {
+            // Do nothing if there is a Sync thread already running
+            return;
+        }
 
         if (mBluetoothService == null) {
             setupBluetoothService();
@@ -716,18 +735,6 @@ public class Main extends FragmentActivity implements
             registerForRerun(RERUN_ON_SYNC_CLICK);
             connectToDefaultDevice();
         } else {
-            if (mSyncWithDeviceThread != null) {
-                // Ensure that the existing thread is cancelled
-                mSyncWithDeviceThread.cancel();
-                try {
-                    mSyncWithDeviceThread.join();
-                } catch (InterruptedException e) {
-                    // Currently there is no use case when the main thread is being interrupted,
-                    // but just as a precaution...
-                    Thread.currentThread().interrupt();
-                }
-            }
-
             mSyncWithDeviceThread = new SyncWithDeviceThread(mBluetoothService, mDBAdapter,
                     mHandler, getSharedPreferences(Main.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE), getApplicationContext());
             mSyncWithDeviceThread.start();
@@ -921,11 +928,10 @@ public class Main extends FragmentActivity implements
 
         private FragmentContainer mFragmentContainer;
 
-        TabInfo(String tag, Bundle args) {
+        TabInfo(String tag) {
             mTag = tag;
             mClass = Constants.DEFAULT_TAB_FRAGMENT_MAP.get(tag);
             mIconId = Constants.TAB_ICON_MAP.get(tag);
-            mArgs = args;
         }
 
     }
