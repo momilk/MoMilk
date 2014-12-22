@@ -38,7 +38,7 @@
 
         <Button
             android:id="@+id/show_last_history_btn"
-            android:text="Last feeding"
+            android:text="@string/last_feeding_btn"
             android:textColor="@color/textcolor"
             android:textStyle="bold"
             android:background="@drawable/rectangle_button_selector"
@@ -58,7 +58,7 @@
 
         <Button
             android:id="@+id/show_day_history_btn"
-            android:text="Day"
+            android:text="@string/day_history_btn"
             android:textColor="@color/textcolor"
             android:textStyle="bold"
             android:background="@drawable/rectangle_button_selector"
@@ -71,7 +71,7 @@
 
         <Button
             android:id="@+id/show_week_history_btn"
-            android:text="Week"
+            android:text="@string/week_history_btn"
             android:textColor="@color/textcolor"
             android:textStyle="bold"
             android:background="@drawable/rectangle_button_selector"
@@ -83,8 +83,8 @@
             android:layout_height="match_parent" />
 
         <Button
-            android:id="@+id/show_month_history_btn"
-            android:text="Month"
+            android:id="@+id/show_all_history_btn"
+            android:text="@string/all_history_btn"
             android:textColor="@color/textcolor"
             android:textStyle="bold"
             android:background="@drawable/rectangle_button_selector"

@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -20,8 +19,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -35,7 +32,7 @@ public class HistoryFragment extends Fragment{
     private static final int SHOW_LAST = 0;
     private static final int SHOW_DAY = 1;
     private static final int SHOW_WEEK = 2;
-    private static final int SHOW_MONTH = 3;
+    private static final int SHOW_ALL = 3;
 
     private HistoryFragmentCallback mCallback;
     private HistoryArrayAdapter mAdapter;
@@ -43,7 +40,7 @@ public class HistoryFragment extends Fragment{
     private Button mShowLastHistoryBtn;
     private Button mShowDayHistoryBtn;
     private Button mShowWeekHistoryBtn;
-    private Button mShowMonthHistoryBtn;
+    private Button mShowAllHistoryBtn;
     private ListView mHistoryListView;
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
@@ -61,8 +58,8 @@ public class HistoryFragment extends Fragment{
                     case SHOW_WEEK:
                         showWeekHistory();
                         break;
-                    case SHOW_MONTH:
-                        showMonthHistory();
+                    case SHOW_ALL:
+                        showAllHistory();
                         break;
                     default:
                         showDayHistory();
@@ -100,11 +97,11 @@ public class HistoryFragment extends Fragment{
             }
         });
 
-        mShowMonthHistoryBtn = (Button) view.findViewById(R.id.show_month_history_btn);
-        mShowMonthHistoryBtn.setOnClickListener(new View.OnClickListener() {
+        mShowAllHistoryBtn = (Button) view.findViewById(R.id.show_all_history_btn);
+        mShowAllHistoryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showMonthHistory();
+                showAllHistory();
             }
         });
 
@@ -156,7 +153,7 @@ public class HistoryFragment extends Fragment{
         mShowLastHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor));
         mShowDayHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
         mShowWeekHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
-        mShowMonthHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
+        mShowAllHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
 
         ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getLastHistory();
         mAdapter.setShadowedBackground(true);
@@ -172,7 +169,7 @@ public class HistoryFragment extends Fragment{
         mShowLastHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
         mShowDayHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor));
         mShowWeekHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
-        mShowMonthHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
+        mShowAllHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
 
         ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getDayHistory();
         mAdapter.setShadowedBackground(false);
@@ -189,7 +186,7 @@ public class HistoryFragment extends Fragment{
         mShowLastHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
         mShowDayHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
         mShowWeekHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor));
-        mShowMonthHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
+        mShowAllHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
 
         ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getWeekHistory();
         mAdapter.setShadowedBackground(false);
@@ -201,20 +198,20 @@ public class HistoryFragment extends Fragment{
     }
 
 
-    public void showMonthHistory() {
+    public void showAllHistory() {
 
         mShowLastHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
         mShowDayHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
         mShowWeekHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor_transparent));
-        mShowMonthHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor));
+        mShowAllHistoryBtn.setTextColor(getResources().getColor(R.color.textcolor));
 
-        ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getMonthHistory();
+        ArrayList<HistoryEntry> history = mCallback.getHistoryDatabaseAdapter().getAllHistory();
         mAdapter.setShadowedBackground(false);
         mAdapter.clear();
         mAdapter.addAll(history);
         mAdapter.notifyDataSetChanged();
 
-        mShownState = SHOW_MONTH;
+        mShownState = SHOW_ALL;
     }
 
 

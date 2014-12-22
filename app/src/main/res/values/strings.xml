@@ -21,6 +21,10 @@
     <string name="empty_list_txt">No measurements yet</string>
     <string name="action_clear_all_measurements">Clear all measurements</string>
     <string name="paired_devices_txt">Paired devices:</string>
+    <string name="last_feeding_btn">Last feeding</string>
+    <string name="day_history_btn">Day</string>
+    <string name="week_history_btn">Week</string>
+    <string name="all_history_btn">All</string>
 
     <!--This section contains strings used in Preferences (Settings)-->
     <string name="preference_category_system">System</string>

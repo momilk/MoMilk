@@ -76,9 +76,8 @@ public class CustomDatabaseAdapter {
     }
 
 
-    public synchronized ArrayList<HistoryFragment.HistoryEntry> getMonthHistory() {
-        return getHistory(CustomSQLOpenHelper.DATE + " >= date('now', '-1 month')",
-                CustomSQLOpenHelper.DATE + " DESC");
+    public synchronized ArrayList<HistoryFragment.HistoryEntry> getAllHistory() {
+        return getHistory(null, CustomSQLOpenHelper.DATE + " DESC");
     }
 
     private synchronized ArrayList<HistoryFragment.HistoryEntry> getHistory(String selection,
