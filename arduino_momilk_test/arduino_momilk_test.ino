@@ -10,15 +10,16 @@ static const int MAX_TOKEN_LENGTH = 10;
 
 
 static const int STATE_IDLE = 0;
-static const int STATE_SEND_PACKETS = 1;
-static const int STATE_SEND_PACKETS_COUNT = 2;
-static const int STATE_WAIT_FOR_ACK = 3;
-static const int STATE_RECEIVED_CORRECT_ACK = 4;
-static const int STATE_RECEIVED_INCORRECT_ACK = 5;
+static const int STATE_WAIT_FOR_SESSION_START = 1;
+static const int STATE_SEND_PACKETS = 2;
+static const int STATE_SEND_PACKETS_COUNT = 3;
+static const int STATE_WAIT_FOR_ACK = 4;
+static const int STATE_RECEIVED_CORRECT_ACK = 5;
+static const int STATE_RECEIVED_INCORRECT_ACK = 6;
 
 const char * const packets[] = {
-  "W@1@L@12@00@00@18@11@2014@1@2@3@4\n",
-  "W@2@R@1@0@0@22@10@2014@1@2@3@4\n",
+  "W@1@L@12@00@00@22@12@2014@1@2@3@4\n",
+  "W@2@R@1@0@0@20@12@2014@1@2@3@4\n",
   "W@3@R@02@02@10@19@11@2014@1@2@3@4\n",
   NULL };
 
@@ -48,28 +49,33 @@ void loop (){
   char stringBuffer[MESSAGE_BUFFER_LENGTH];
 
   int i;
+  char nextChar;
 
   if(swSerial.available()){
     delay(100);
     i = 0;
     // Get the contents of the packet
     while( swSerial.available() && (i < 99)) {
-      commandBuffer[i++] = swSerial.read();
+      nextChar = swSerial.read();
+      if (nextChar != '\n') {
+        commandBuffer[i++] = nextChar;
+      } else {
+        break; 
+      }
     }
     commandBuffer[i++]='\0';
 
     if(i > 0) {
-
-      if (currState != STATE_IDLE && currState != STATE_WAIT_FOR_ACK) {
-        Serial.write("ERROR: received input message in incorrect state!\n");  
-        return;
-      }
-
+      
       // Print the original message
       stringBuffer[0] = '\0';
       sprintf(stringBuffer, "Got a message: %s\n", commandBuffer);
       Serial.write(stringBuffer);
 
+      if (currState != STATE_IDLE && currState != STATE_WAIT_FOR_SESSION_START && currState != STATE_WAIT_FOR_ACK) {
+        Serial.write("ERROR: received input message in incorrect state!\n");  
+        return;
+      }
 
       char** tokens = myTokenize(commandBuffer);
 
@@ -85,11 +91,19 @@ void loop (){
       if (*tokens[0] == 'T') {
         if (currState == STATE_IDLE) {
           packetsSent = 0;
-          currState = STATE_SEND_PACKETS;
-          Serial.write("Current state: STATE_SEND_PACKETS\n");
+          currState = STATE_WAIT_FOR_SESSION_START;
+          Serial.write("Current state: STATE_WAIT_FOR_SESSION_START\n");
         } 
         else {
           Serial.write("ERROR: received 'T' message while not in STATE_IDLE!\n");  
+        }
+      } 
+      else if (*tokens[0] == 'S') {
+        if (currState == STATE_WAIT_FOR_SESSION_START) {
+          currState = STATE_SEND_PACKETS;
+          Serial.write("Current state: STATE_SEND_PACKETS\n");
+        } else {
+          Serial.write("ERROR: received 'S' message while not in STATE_WAIT_FOR_SESSION_START!\n");  
         }
       }
       else if (*tokens[0] == 'R') {
@@ -136,12 +150,6 @@ void loop (){
     }
   }
   else if (currState == STATE_SEND_PACKETS) {
-    Serial.write("Sending 'Start Session' packet\n");
-    // Send the "start session" packet
-    swSerial.write("S\n");
-    delay(100);
-
-
     Serial.write("Sending 'Data' packets\n");
     i = 0;
     while (packets[i] != NULL) {

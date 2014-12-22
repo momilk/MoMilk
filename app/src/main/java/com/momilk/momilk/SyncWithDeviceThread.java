@@ -3,14 +3,9 @@ package com.momilk.momilk;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Message;
-import android.preference.Preference;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -35,7 +30,7 @@ public class SyncWithDeviceThread extends Thread {
             Pattern.compile("^W@(\\d+)@(L|R)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(-?\\d+)@(-?\\d+)@(-?\\d+)$");
 
     private enum SyncState {
-        IDLE, WAIT_FOR_SESSION_START, WAIT_FOR_SESSION_END,
+        SYNC_DATE, START_SYNC_SESSION, RECEIVE_PACKETS,
         SESSION_SUCCESSFULL, SESSION_UNSUCCESSFULL, DONE
     }
 
@@ -63,7 +58,7 @@ public class SyncWithDeviceThread extends Thread {
         mPreferences = preferences;
         mContext = context;
 
-        mSyncState = SyncState.IDLE;
+        mSyncState = SyncState.SYNC_DATE;
         mCancelled = false;
 
         mStartTime = System.currentTimeMillis();
@@ -84,26 +79,29 @@ public class SyncWithDeviceThread extends Thread {
                 setSyncState(SyncState.DONE);
             }
 
+            if (!mInputBuffer.isEmpty()) {
+                if (getSyncState() != SyncState.RECEIVE_PACKETS) {
+                    Log.e(LOG_TAG, "Got unexpected packet while " +
+                            "not in RECEIVE_PACKETS state" + mInputBuffer.poll());
+                    cancel();
+                    setSyncState(SyncState.DONE);
+                    continue;
+                }
+            }
+
             switch(getSyncState()) {
 
-                case IDLE:
+                case SYNC_DATE:
                     sendMessage(composeDateSyncMessage());
-                    setSyncState(SyncState.WAIT_FOR_SESSION_START);
+                    setSyncState(SyncState.START_SYNC_SESSION);
                     break;
 
-                case WAIT_FOR_SESSION_START:
-                    if (!mInputBuffer.isEmpty()) {
-                        String message = mInputBuffer.poll();
-                        if (message.equals(START_SESSION_SYMBOL)) {
-                            setSyncState(SyncState.WAIT_FOR_SESSION_END);
-                        } else {
-                            Log.e(LOG_TAG, "While waiting for 'Session Start' packet, got " +
-                                    "unexpected packet: " + message);
-                        }
-                    }
+                case START_SYNC_SESSION:
+                    sendMessage(START_SESSION_SYMBOL);
+                    setSyncState(SyncState.RECEIVE_PACKETS);
                     break;
 
-                case WAIT_FOR_SESSION_END:
+                case RECEIVE_PACKETS:
                     if (!mInputBuffer.isEmpty()) {
                         String message = mInputBuffer.poll();
                         Matcher endSessionMatcher = END_SESSION_PATTERN.matcher(message);
@@ -136,7 +134,7 @@ public class SyncWithDeviceThread extends Thread {
                 case SESSION_UNSUCCESSFULL:
                     // The packets will be re-transmitted
                     discardReceivedPackets();
-                    setSyncState(SyncState.WAIT_FOR_SESSION_START);
+                    setSyncState(SyncState.START_SYNC_SESSION);
                     break;
                 case DONE:
                     mBluetoothService.stop();
@@ -258,7 +256,7 @@ public class SyncWithDeviceThread extends Thread {
     }
 
     private String composeAckMessage() {
-        return ACK_SYMBOL + "@" + Integer.toString(mDataPackets.size()) + "\n";
+        return ACK_SYMBOL + "@" + Integer.toString(mDataPackets.size());
     }
 
     public void newIncomingMessage(String message) {
