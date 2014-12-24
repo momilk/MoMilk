@@ -49,7 +49,7 @@ public class Main extends FragmentActivity implements
     public static String PREFERENCE_FILE = null;
 
     // Set this to true in order access various debug features of the app (through ActionBar)
-    private static final boolean ENABLE_DEBUG = false;
+    public static final boolean ENABLE_DEBUG = false;
 
     private static final int RERUN_DISCOVER_BLUETOOTH_DEVICES = 0;
     private static final int RERUN_ON_SYNC_CLICK = 1;

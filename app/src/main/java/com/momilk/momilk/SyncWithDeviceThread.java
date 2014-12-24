@@ -137,7 +137,9 @@ public class SyncWithDeviceThread extends Thread {
                     setSyncState(SyncState.START_SYNC_SESSION);
                     break;
                 case DONE:
-                    mBluetoothService.stop();
+                    if (!Main.ENABLE_DEBUG) {
+                        mBluetoothService.stop();
+                    }
                     return;
             }
         }
