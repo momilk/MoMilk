@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 
 /**
@@ -24,6 +25,15 @@ public class ExtrasFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_extras, container, false);
 
+
+        ImageButton extraBreathingBtn = (ImageButton) view.findViewById(R.id.extra_breathing_btn);
+
+        extraBreathingBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCallback.onExtraBreathingClick();
+            }
+        });
         // TODO: add extras button listeners here
         return view;
     }
@@ -45,7 +55,7 @@ public class ExtrasFragment extends Fragment {
 
     // Container Activity must implement this interface
     public interface ExtrasFragmentCallback {
-        public void onExtraSelected(String extraTag);
+        public void onExtraBreathingClick();
     }
 
 }

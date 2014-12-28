@@ -813,7 +813,7 @@ public class Main extends FragmentActivity implements
     // -------------------------------------------------------------------------------------------
 
     @Override
-    public void onExtraSelected(String extraTag) {
+    public void onExtraBreathingClick() {
         // TODO: complete this method
     }
 
