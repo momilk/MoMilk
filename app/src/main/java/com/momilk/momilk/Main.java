@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.mtp.MtpConstants;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -45,8 +46,6 @@ public class Main extends FragmentActivity implements
         ExtrasFragment.ExtrasFragmentCallback,
         NewMeasurementFragment.NewMeasurementFragmentCallback,
         SettingsFragment.SettingsFragmentCallback {
-
-    public static String PREFERENCE_FILE = null;
 
     // Set this to true in order access various debug features of the app (through ActionBar)
     public static final boolean ENABLE_DEBUG = false;
@@ -182,10 +181,6 @@ public class Main extends FragmentActivity implements
             Main.context = getApplicationContext();
         }
 
-        if (Main.PREFERENCE_FILE == null) {
-            Main.PREFERENCE_FILE = getPackageName() + "_pref";
-        }
-
         // Setup TabHost
         initializeTabHost(savedInstanceState);
 
@@ -297,9 +292,9 @@ public class Main extends FragmentActivity implements
                 mDBAdapter.clearTable();
                 return true;
             case R.id.action_reset_default_device:
-                getSharedPreferences(Main.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE).edit().
+                getSharedPreferences(Constants.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE).edit().
                         remove("preference_default_device_address").commit();
-                getSharedPreferences(Main.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE).edit().
+                getSharedPreferences(Constants.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE).edit().
                         remove("preference_default_device_name").commit();
             default:
                 return super.onOptionsItemSelected(item);
@@ -670,7 +665,7 @@ public class Main extends FragmentActivity implements
 
 
     private void connectToDefaultDevice() {
-        SharedPreferences sharedPref = getSharedPreferences(Main.PREFERENCE_FILE,
+        SharedPreferences sharedPref = getSharedPreferences(Constants.PREFERENCE_FILE,
                 FragmentActivity.MODE_PRIVATE);
         String deviceAddressKey = "preference_default_device_address";
         if (!sharedPref.contains(deviceAddressKey)) {
@@ -736,7 +731,7 @@ public class Main extends FragmentActivity implements
             connectToDefaultDevice();
         } else {
             mSyncWithDeviceThread = new SyncWithDeviceThread(mBluetoothService, mDBAdapter,
-                    mHandler, getSharedPreferences(Main.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE), getApplicationContext());
+                    mHandler, getSharedPreferences(Constants.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE), getApplicationContext());
             mSyncWithDeviceThread.start();
         }
 
@@ -771,7 +766,7 @@ public class Main extends FragmentActivity implements
             public void onClick(DialogInterface dialog, int which) {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
-                        SharedPreferences sharedPref = getSharedPreferences(Main.PREFERENCE_FILE, Context.MODE_PRIVATE);
+                        SharedPreferences sharedPref = getSharedPreferences(Constants.PREFERENCE_FILE, Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPref.edit();
                         editor.putString("preference_default_device_name", device.getName());
                         editor.putString("preference_default_device_address", device.getAddress());

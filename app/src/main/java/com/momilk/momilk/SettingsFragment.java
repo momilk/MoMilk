@@ -27,7 +27,7 @@ public class SettingsFragment extends PreferenceFragment implements
         super.onCreate(savedInstanceState);
 
         PreferenceManager manager = getPreferenceManager();
-        manager.setSharedPreferencesName(Main.PREFERENCE_FILE);
+        manager.setSharedPreferencesName(Constants.PREFERENCE_FILE);
 
         addPreferencesFromResource(R.xml.preferences);
 
@@ -35,7 +35,7 @@ public class SettingsFragment extends PreferenceFragment implements
     }
 
     private void initPreferences() {
-        SharedPreferences sharedPref = getActivity().getSharedPreferences(Main.PREFERENCE_FILE,
+        SharedPreferences sharedPref = getActivity().getSharedPreferences(Constants.PREFERENCE_FILE,
                 FragmentActivity.MODE_PRIVATE);
 
         Preference preference;
