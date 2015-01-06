@@ -11,6 +11,9 @@ import java.util.Map;
  */
 public class Constants {
 
+    // The name of the preference file to use
+    public static final String PREFERENCE_FILE = "com.momilk.momilk_pref";
+
     // Sync session timeout in seconds
     public static final int SYNC_TIMEOUT_SEC = 5;
 

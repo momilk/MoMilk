@@ -21,7 +21,7 @@ public class PersonalDataFragment extends PreferenceFragment implements
         super.onCreate(savedInstanceState);
 
         PreferenceManager manager = getPreferenceManager();
-        manager.setSharedPreferencesName(Main.PREFERENCE_FILE);
+        manager.setSharedPreferencesName(Constants.PREFERENCE_FILE);
 
         addPreferencesFromResource(R.xml.preferences_personal_data);
 
