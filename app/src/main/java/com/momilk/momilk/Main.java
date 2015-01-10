@@ -60,20 +60,20 @@ public class Main extends FragmentActivity implements
     private static Context context = null;
 
 
-    private BluetoothAdapter mBluetoothAdapter = null;
+    private BluetoothAdapter mBluetoothAdapter;
 
-    private BluetoothService mBluetoothService = null;
+    private BluetoothService mBluetoothService;
     private int mBluetoothServiceState = BluetoothService.STATE_NONE;
 
-    private SyncWithDeviceThread mSyncWithDeviceThread = null;
+    private SyncWithDeviceThread mSyncWithDeviceThread;
 
     private String[] mCurrentTabsGroup;
 
     private FragmentTabHost mTabHost;
     private HashMap<String, TabInfo> mMapTabInfo = new HashMap<String, TabInfo>();
-    private TabInfo mCurrentTabInfo = null;
+    private TabInfo mCurrentTabInfo;
 
-    private String mConnectedDeviceName = null;
+    private String mConnectedDeviceName;
 
     private CustomDatabaseAdapter mDBAdapter;
 
@@ -93,7 +93,6 @@ public class Main extends FragmentActivity implements
                             break;
                         case BluetoothService.STATE_CONNECTING:
                             break;
-                        case BluetoothService.STATE_LISTEN:
                         case BluetoothService.STATE_NONE:
                             // If the previous state was CONNECTING then the connection was unsuccessful
                             // and we need to clear the rerun stack
@@ -618,14 +617,6 @@ public class Main extends FragmentActivity implements
     }
 
 
-    public void startListening() {
-        ensureDiscoverable();
-        if (mBluetoothService == null) {
-            setupBluetoothService();
-        }
-        mBluetoothService.start();
-    }
-
 
     private void ensureDiscoverable() {
         if (mBluetoothAdapter.getScanMode() !=
@@ -969,5 +960,7 @@ public class Main extends FragmentActivity implements
             }
         }
     }
+
+    
 
 }

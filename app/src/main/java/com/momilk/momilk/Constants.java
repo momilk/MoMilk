@@ -11,16 +11,19 @@ import java.util.Map;
  */
 public class Constants {
 
-    // The name of the preference file to use
+
+    /**
+     * The name of the preference file to use across the app
+      */
     public static final String PREFERENCE_FILE = "com.momilk.momilk_pref";
 
-    // Sync session timeout in seconds
+    /**
+     * Sync session timeout in seconds
+      */
     public static final int SYNC_TIMEOUT_SEC = 5;
 
-    // Request codes
-    public static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
-    public static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
-    public static final int REQUEST_ENABLE_BT = 3;
+    // Request codes to be used in StartActivityForResultCodes
+    public static final int REQUEST_ENABLE_BT = 1;
 
     // Intent actions
     public static final String ACTION_NOTIFY_DB_CHANGED = "com.momilk.momilk.ACTION_NOTIFY_DB_CHANGED";
@@ -45,20 +48,22 @@ public class Constants {
     public static final String EXTRAS_TAB_TAG = "extras";
 
 
-
-    // Default tabs to be shown in the app
+    /**
+     * Default tabs to be shown in the app
+      */
     public static final String[] DEFAULT_TABS_GROUP = new String[] {
             HOME_TAB_TAG, SETTINGS_TAB_TAG, HISTORY_TAB_TAG, EXTRAS_TAB_TAG
     };
 
-    // Tabs to be shown when the user enters HISTORY tab
+    /**
+     * Tabs to be shown when the user enters HISTORY tab
+      */
     public static final String[] HISTORY_TABS_GROUP = new String[] {
             HOME_TAB_TAG, HISTORY_LIST_TAB_TAG, HISTORY_CLOCK_TAB_TAG, EXTRAS_TAB_TAG
     };
 
 
-
-    /*
+    /**
     This map is used in order to map tab's tags into default fragments for these tabs
      */
     public static final Map<String, Class> DEFAULT_TAB_FRAGMENT_MAP;
@@ -74,7 +79,7 @@ public class Constants {
     }
 
 
-    /*
+    /**
     This map is used in order to map fragments into their tabs (in which tab the fragment
     should be shown)
      */
@@ -93,7 +98,7 @@ public class Constants {
         FRAGMENT_TO_TAB_MAP = Collections.unmodifiableMap(map);
     }
 
-    /*
+    /**
        This map is used in order to map tab's tags into icons fot these tabs
     */
     public static final Map<String, Integer> TAB_ICON_MAP;
