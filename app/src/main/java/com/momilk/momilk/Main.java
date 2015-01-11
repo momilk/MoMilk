@@ -31,8 +31,11 @@ import android.widget.ImageView;
 import android.widget.TabHost;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.Stack;
 
@@ -53,6 +56,7 @@ public class Main extends FragmentActivity implements
     private static final int RERUN_ON_SYNC_CLICK = 1;
     private static final int RERUN_CONNECT_TO_DEFAULT_DEVICE = 2;
     private static final int RERUN_ON_SET_DEFAULT_DEVICE_CLICK = 3;
+    private static final int RERUN_ON_EXTRA_LUNGS_CLICK = 4;
 
     private static final String LOG_TAG = "MainActivity";
 
@@ -66,6 +70,7 @@ public class Main extends FragmentActivity implements
     private int mBluetoothServiceState = BluetoothService.STATE_NONE;
 
     private SyncWithDeviceThread mSyncWithDeviceThread;
+    private CaptureBreathingThread mCaptureBreathingThread;
 
     private String[] mCurrentTabsGroup;
 
@@ -110,9 +115,14 @@ public class Main extends FragmentActivity implements
                 case Constants.MESSAGE_READ:
                     String readMessage = (String) msg.obj;
                     debugToast("Received:\n" + readMessage, false);
+                    // todo: make this stuff generic
                     if (mSyncWithDeviceThread != null && mSyncWithDeviceThread.isAlive()) {
                         mSyncWithDeviceThread.newIncomingMessage(readMessage);
-                    } else {
+                    }
+                    else if (mCaptureBreathingThread != null && mCaptureBreathingThread.isAlive()) {
+                        mCaptureBreathingThread.newIncomingMessage(readMessage);
+                    }
+                    else {
                         Log.e(LOG_TAG, "Incoming message wasn't utilized!");
                     }
                     break;
@@ -346,6 +356,10 @@ public class Main extends FragmentActivity implements
                 case RERUN_ON_SET_DEFAULT_DEVICE_CLICK:
                     onSetDefaultDeviceClick();
                     Log.d(LOG_TAG, "reruning onSetDefaultDeviceClick()");
+                    break;
+                case RERUN_ON_EXTRA_LUNGS_CLICK:
+                    onExtraLungsClick();
+                    Log.d(LOG_TAG, "reruning onExtraLungsClick()");
                     break;
                 default:
                     break;
@@ -712,6 +726,12 @@ public class Main extends FragmentActivity implements
             return;
         }
 
+        if ((mCaptureBreathingThread!= null && mCaptureBreathingThread.isAlive()) ||
+                mRerunMethodStack.contains(Integer.valueOf(RERUN_ON_EXTRA_LUNGS_CLICK))) {
+            Toast.makeText(this, "Can't sync while breathing session in progress", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         if (mBluetoothService == null) {
             setupBluetoothService();
         }
@@ -721,7 +741,7 @@ public class Main extends FragmentActivity implements
             connectToDefaultDevice();
         } else {
             mSyncWithDeviceThread = new SyncWithDeviceThread(mBluetoothService, mDBAdapter,
-                    mHandler, getSharedPreferences(Constants.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE), getApplicationContext());
+                    mHandler, getSharedPreferences(Constants.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE));
             mSyncWithDeviceThread.start();
         }
 
@@ -803,8 +823,45 @@ public class Main extends FragmentActivity implements
     // -------------------------------------------------------------------------------------------
 
     @Override
-    public void onExtraSelected(String extraTag) {
-        // TODO: complete this method
+    public void onExtraLungsClick() {
+
+        if(mRerunMethodStack.contains(Integer.valueOf(RERUN_ON_EXTRA_LUNGS_CLICK))) {
+            // Do nothing if this method is about to be called again
+            return;
+        }
+
+        if ((mCaptureBreathingThread!= null && mCaptureBreathingThread.isAlive())){
+            // Stop the existing breathing session if it is active
+            mCaptureBreathingThread.done();
+            return;
+        }
+
+
+        if ((mSyncWithDeviceThread != null && mSyncWithDeviceThread.isAlive()) ||
+                mRerunMethodStack.contains(Integer.valueOf(RERUN_ON_SYNC_CLICK))) {
+            Toast.makeText(this, "Can't start breathing session while syncing", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (mBluetoothService == null) {
+            setupBluetoothService();
+        }
+
+        if (mBluetoothService.getState() != BluetoothService.STATE_CONNECTED) {
+            registerForRerun(RERUN_ON_EXTRA_LUNGS_CLICK);
+            connectToDefaultDevice();
+        } else {
+
+            String dateTime =  new SimpleDateFormat("dd-MM-yyyy_HH-mm", Locale.getDefault()).format(new Date());
+            String motherName =
+                    getSharedPreferences(Constants.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE).
+                    getString("preference_mother_name", "noname");
+
+            String fileName = motherName + "_" + dateTime + ".csv";
+
+            mCaptureBreathingThread = new CaptureBreathingThread(this, mBluetoothService, mHandler,fileName);
+            mCaptureBreathingThread.start();
+        }
     }
 
 

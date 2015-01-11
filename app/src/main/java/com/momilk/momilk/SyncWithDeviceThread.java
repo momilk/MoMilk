@@ -1,7 +1,6 @@
 package com.momilk.momilk;
 
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Message;
@@ -29,7 +28,7 @@ public class SyncWithDeviceThread extends Thread {
     private static final Pattern DATA_PATTERN =
             Pattern.compile("^W@(\\d+)@(L|R)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(\\d+)@(-?\\d+)@(-?\\d+)@(-?\\d+)$");
 
-    private enum SyncState {
+    private enum ThreadState {
         SYNC_DATE, START_SYNC_SESSION, RECEIVE_PACKETS,
         SESSION_SUCCESSFULL, SESSION_UNSUCCESSFULL, DONE
     }
@@ -41,24 +40,22 @@ public class SyncWithDeviceThread extends Thread {
     private final CustomDatabaseAdapter mDBAdapter;
     private final Handler mHandler;
     private final SharedPreferences mPreferences;
-    private final Context mContext;
 
-    private SyncState mSyncState;
+    private ThreadState mThreadState;
     private boolean mCancelled;
 
     private long mStartTime;
 
     public SyncWithDeviceThread(BluetoothService bluetoothService, CustomDatabaseAdapter dbAdapter,
-                                Handler handler, SharedPreferences preferences, Context context) {
+                                Handler handler, SharedPreferences preferences) {
         mBluetoothService = bluetoothService;
         mInputBuffer = new ConcurrentLinkedQueue<String>();
         mDataPackets = new ArrayList<DataPacket>();
         mDBAdapter = dbAdapter;
         mHandler = handler;
         mPreferences = preferences;
-        mContext = context;
 
-        mSyncState = SyncState.SYNC_DATE;
+        mThreadState = ThreadState.SYNC_DATE;
         mCancelled = false;
 
         mStartTime = System.currentTimeMillis();
@@ -72,33 +69,32 @@ public class SyncWithDeviceThread extends Thread {
 
             if (isCancelled()) {
                 showToastInActivity("Sync cancelled");
-                setSyncState(SyncState.DONE);
+                setSyncState(ThreadState.DONE);
             }
             if (System.currentTimeMillis() > mStartTime + 1000*Constants.SYNC_TIMEOUT_SEC) {
                 showToastInActivity("Sync cancelled: timeout");
-                setSyncState(SyncState.DONE);
+                setSyncState(ThreadState.DONE);
             }
 
             if (!mInputBuffer.isEmpty()) {
-                if (getSyncState() != SyncState.RECEIVE_PACKETS) {
+                if (getThreadState() != ThreadState.RECEIVE_PACKETS) {
                     Log.e(LOG_TAG, "Got unexpected packet while " +
                             "not in RECEIVE_PACKETS state" + mInputBuffer.poll());
                     cancel();
-                    setSyncState(SyncState.DONE);
                     continue;
                 }
             }
 
-            switch(getSyncState()) {
+            switch(getThreadState()) {
 
                 case SYNC_DATE:
                     sendMessage(composeDateSyncMessage());
-                    setSyncState(SyncState.START_SYNC_SESSION);
+                    setSyncState(ThreadState.START_SYNC_SESSION);
                     break;
 
                 case START_SYNC_SESSION:
                     sendMessage(START_SESSION_SYMBOL);
-                    setSyncState(SyncState.RECEIVE_PACKETS);
+                    setSyncState(ThreadState.RECEIVE_PACKETS);
                     break;
 
                 case RECEIVE_PACKETS:
@@ -108,33 +104,32 @@ public class SyncWithDeviceThread extends Thread {
                         if (endSessionMatcher.find()) {
                             sendMessage(composeAckMessage());
                             if (Integer.parseInt(endSessionMatcher.group(1)) == mDataPackets.size()) {
-                                setSyncState(SyncState.SESSION_SUCCESSFULL);
+                                setSyncState(ThreadState.SESSION_SUCCESSFULL);
                             } else {
-                                setSyncState(SyncState.SESSION_UNSUCCESSFULL);
+                                setSyncState(ThreadState.SESSION_UNSUCCESSFULL);
                             }
                             break;
                         }
 
                         Matcher dataMatcher = DATA_PATTERN.matcher(message);
                         if (dataMatcher.find()) {
-                            parseDataPacket(dataMatcher);
-                            break;
+                            parseAndCacheDataPacket(dataMatcher);
                         }
 
                     }
                     break;
 
                 case SESSION_SUCCESSFULL:
-                    storeReceivedPackets();
+                    flushDataPacketsCache();
                     // Send a success message back to the Activity
                     showToastInActivity("Sync complete: " +
                             Integer.toString(mDataPackets.size()) + " new entries");
-                    setSyncState(SyncState.DONE);
+                    setSyncState(ThreadState.DONE);
                     break;
                 case SESSION_UNSUCCESSFULL:
                     // The packets will be re-transmitted
-                    discardReceivedPackets();
-                    setSyncState(SyncState.START_SYNC_SESSION);
+                    clearDataPacketsCache();
+                    setSyncState(ThreadState.START_SYNC_SESSION);
                     break;
                 case DONE:
                     if (!Main.ENABLE_DEBUG) {
@@ -171,7 +166,7 @@ public class SyncWithDeviceThread extends Thread {
         }
     }
 
-    private void parseDataPacket(Matcher matcher) {
+    private void parseAndCacheDataPacket(Matcher matcher) {
 
         try {
             // The dots were added in order for the formatting to be able to handle single letter
@@ -238,7 +233,7 @@ public class SyncWithDeviceThread extends Thread {
     }
 
 
-    private void storeReceivedPackets() {
+    private void flushDataPacketsCache() {
         for (DataPacket packet : mDataPackets) {
             if (mDBAdapter.insertData(packet.mIndex, packet.mLeftOrRight, packet.mDate,
                     packet.mDuration, packet.mAmount, packet.mDeltaRoll, packet.mDeltaTilt) < 0) {
@@ -247,7 +242,7 @@ public class SyncWithDeviceThread extends Thread {
         }
     }
 
-    private void discardReceivedPackets() {
+    private void clearDataPacketsCache() {
         mDataPackets.clear();
     }
 
@@ -274,12 +269,12 @@ public class SyncWithDeviceThread extends Thread {
         return mCancelled;
     }
 
-    private synchronized void setSyncState(SyncState state) {
-        mSyncState = state;
+    private synchronized void setSyncState(ThreadState state) {
+        mThreadState = state;
     }
 
-    private synchronized SyncState getSyncState() {
-        return mSyncState;
+    private synchronized ThreadState getThreadState() {
+        return mThreadState;
     }
 
     private void showToastInActivity(String message) {

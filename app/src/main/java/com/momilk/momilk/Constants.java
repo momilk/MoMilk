@@ -18,9 +18,15 @@ public class Constants {
     public static final String PREFERENCE_FILE = "com.momilk.momilk_pref";
 
     /**
-     * Sync session timeout in seconds
+     * Sync session limit time (in seconds)
       */
     public static final int SYNC_TIMEOUT_SEC = 5;
+
+    /**
+     * Breathing session limit time waiting for an ack from the device (in seconds)
+     */
+    public static final int BREATHING_WAIT_FOR_ACK_TIMEOUT_SEC = 5;
+
 
     // Request codes to be used in StartActivityForResultCodes
     public static final int REQUEST_ENABLE_BT = 1;

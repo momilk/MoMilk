@@ -17,6 +17,7 @@
         android:paddingRight="@dimen/extras_fragment_layout_padding">
 
         <ImageButton
+            android:id="@+id/btn_extra_circle"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
@@ -28,6 +29,7 @@
 
 
         <ImageButton
+            android:id="@+id/btn_extra_man"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
@@ -50,6 +52,7 @@
         android:paddingRight="@dimen/extras_fragment_layout_padding">
 
         <ImageButton
+            android:id="@+id/btn_extra_lungs"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
@@ -61,6 +64,7 @@
 
 
         <ImageButton
+            android:id="@+id/btn_extra_pulse"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
