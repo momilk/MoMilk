@@ -30,7 +30,7 @@ public class CaptureBreathingThread extends Thread {
 
     private static final Pattern ACK_PATTERN = Pattern.compile("^Z@(\\d+)$");
     private static final Pattern DATA_PATTERN =
-            Pattern.compile("^(\\d+)@(-?\\d+)@(-?\\d+)@(-?\\d+)$");
+            Pattern.compile("^([.\\d]+)@(-?[.\\d]+)@(-?[.\\d]+)@(-?[.\\d]+)$");
 
     private enum ThreadState {
         SYNC_DATE, START_BREATHING_SESSION, RECEIVE_PACKETS,
@@ -60,6 +60,8 @@ public class CaptureBreathingThread extends Thread {
 
     public CaptureBreathingThread(Context context, BluetoothService bluetoothService, Handler handler,
                                   String fileName) {
+
+        Log.d(LOG_TAG, "Creating new CaptureBreathingThread");
         mHandler = handler;
         mContext = context;
 
@@ -104,10 +106,6 @@ public class CaptureBreathingThread extends Thread {
                         setThreadState(ThreadState.DONE);
                         break;
                     }
-                    else if (incomingMsg != null) {
-                        Log.e(LOG_TAG, "Received message while in SYNC_DATE state");
-                        cancel();
-                    }
                     else {
                         sendMessage(composeDateSyncMessage());
                         setThreadState(ThreadState.START_BREATHING_SESSION);
@@ -121,13 +119,9 @@ public class CaptureBreathingThread extends Thread {
                         setThreadState(ThreadState.DONE);
                         break;
                     }
-                    else if (incomingMsg != null) {
-                        Log.e(LOG_TAG, "Received message while in START_BREATHING_SESSION state: "
-                                + incomingMsg );
-                        cancel();
-                    }
                     else {
                         openFileForWrite();
+                        writeLineToFile("Time , Weight, Roll, Tilt");
                         sendMessage(START_SESSION_SYMBOL);
                         setThreadState(ThreadState.RECEIVE_PACKETS);
                     }
@@ -146,7 +140,7 @@ public class CaptureBreathingThread extends Thread {
                         if (dataMatcher.find()) {
                             parseAndWriteDataPacket(dataMatcher);
                         } else {
-                            Log.e(LOG_TAG, "Received unrecognized packet while in RECEIVE_PACKETS " +
+                            Log.d(LOG_TAG, "Received unrecognized packet while in RECEIVE_PACKETS " +
                                     "state" + incomingMsg);
                         }
                     }
@@ -169,15 +163,20 @@ public class CaptureBreathingThread extends Thread {
                             if (Integer.valueOf(ackMatcher.group(1)) == mNumOfPacketsWritten ) {
                                 Log.d(LOG_TAG, "all of " + mNumOfPacketsWritten +
                                         " packets were sucessfully written to the file");
+                                writeLineToFile("all of " + mNumOfPacketsWritten +
+                                        " packets were sucessfully written to the file");
                             } else {
                                 Log.e(LOG_TAG, "only " + mNumOfPacketsWritten +
+                                        " packets (out of " + ackMatcher.group(1) +")" +
+                                        "were sucessfully written to the file");
+                                writeLineToFile( "only " + mNumOfPacketsWritten +
                                         " packets (out of " + ackMatcher.group(1) +")" +
                                         "were sucessfully written to the file");
                             }
                             setThreadState(ThreadState.DONE);
                         }
                         else {
-                            Log.e(LOG_TAG, "Received unrecognized packet while in WAIT_FOR_ACK " +
+                            Log.d(LOG_TAG, "Received unrecognized packet while in WAIT_FOR_ACK " +
                                     "state" + incomingMsg);
                         }
                     }
@@ -185,7 +184,7 @@ public class CaptureBreathingThread extends Thread {
 
                 case DONE:
                     if (!Main.ENABLE_DEBUG) {
-                        mBluetoothService.stop();
+                        //mBluetoothService.stop();
                     }
 
                     if (mWriter != null) {
@@ -244,9 +243,9 @@ public class CaptureBreathingThread extends Thread {
         String deltaRoll = matcher.group(3);
         String deltaTilt = matcher.group(4);
 
-//        String msg = "Parsed:\n" + "DeltaSec: " + deltaSec + "\nValue: " + value +
-//                "\n\u0394Roll: " + deltaRoll + "\n\u0394Tilt: " + deltaTilt;
-//        Log.d(LOG_TAG, msg);
+        String msg = "Parsed:\n" + "DeltaSec: " + deltaSec + "\nValue: " + value +
+                "\n\u0394Roll: " + deltaRoll + "\n\u0394Tilt: " + deltaTilt;
+        Log.d(LOG_TAG, msg);
 
         if (writeLineToFile(deltaSec + " , " + value + " , " + deltaRoll + " , " + deltaTilt)) {
             mNumOfPacketsWritten ++;
