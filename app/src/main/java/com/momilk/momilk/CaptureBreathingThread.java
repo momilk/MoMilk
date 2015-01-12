@@ -80,6 +80,8 @@ public class CaptureBreathingThread extends Thread {
     @Override
     public void run() {
 
+        showToastInActivity("Breathing session started");
+
         String incomingMsg;
 
         while (true) {
@@ -201,6 +203,7 @@ public class CaptureBreathingThread extends Thread {
                         } else {
                             MediaScannerConnection.scanFile(mContext,
                                     new String[] { mFile.getPath() }, null, null);
+                            showToastInActivity("Breathing session completed successfully");
                         }
                     }
                     return;
@@ -241,9 +244,9 @@ public class CaptureBreathingThread extends Thread {
         String deltaRoll = matcher.group(3);
         String deltaTilt = matcher.group(4);
 
-        String msg = "Parsed:\n" + "DeltaSec: " + deltaSec + "\nValue: " + value +
-                "\n\u0394Roll: " + deltaRoll + "\n\u0394Tilt: " + deltaTilt;
-        Log.d(LOG_TAG, msg);
+//        String msg = "Parsed:\n" + "DeltaSec: " + deltaSec + "\nValue: " + value +
+//                "\n\u0394Roll: " + deltaRoll + "\n\u0394Tilt: " + deltaTilt;
+//        Log.d(LOG_TAG, msg);
 
         if (writeLineToFile(deltaSec + " , " + value + " , " + deltaRoll + " , " + deltaTilt)) {
             mNumOfPacketsWritten ++;
