@@ -152,9 +152,16 @@ public class BluetoothService {
      * @param message The message to write
      * @see ConnectedThread#write(String)
      */
-    public synchronized void write(String message) {
+    public void write(String message) {
+        // Create temporary object
+        ConnectedThread r;
+        // Synchronize a copy of the ConnectedThread
+        synchronized (this) {
             if (mState != STATE_CONNECTED) return;
-            mConnectedThread.write(message);
+            r = mConnectedThread;
+        }
+        // Perform the write unsynchronized
+        r.write(message);
     }
 
     /**

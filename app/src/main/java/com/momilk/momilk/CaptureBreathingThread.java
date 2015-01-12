@@ -60,8 +60,6 @@ public class CaptureBreathingThread extends Thread {
 
     public CaptureBreathingThread(Context context, BluetoothService bluetoothService, Handler handler,
                                   String fileName) {
-
-        Log.d(LOG_TAG, "Creating new CaptureBreathingThread");
         mHandler = handler;
         mContext = context;
 
@@ -184,7 +182,7 @@ public class CaptureBreathingThread extends Thread {
 
                 case DONE:
                     if (!Main.ENABLE_DEBUG) {
-                        //mBluetoothService.stop();
+                        mBluetoothService.stop();
                     }
 
                     if (mWriter != null) {
@@ -243,9 +241,9 @@ public class CaptureBreathingThread extends Thread {
         String deltaRoll = matcher.group(3);
         String deltaTilt = matcher.group(4);
 
-        String msg = "Parsed:\n" + "DeltaSec: " + deltaSec + "\nValue: " + value +
-                "\n\u0394Roll: " + deltaRoll + "\n\u0394Tilt: " + deltaTilt;
-        Log.d(LOG_TAG, msg);
+//        String msg = "Parsed:\n" + "DeltaSec: " + deltaSec + "\nValue: " + value +
+//                "\n\u0394Roll: " + deltaRoll + "\n\u0394Tilt: " + deltaTilt;
+//        Log.d(LOG_TAG, msg);
 
         if (writeLineToFile(deltaSec + " , " + value + " , " + deltaRoll + " , " + deltaTilt)) {
             mNumOfPacketsWritten ++;
