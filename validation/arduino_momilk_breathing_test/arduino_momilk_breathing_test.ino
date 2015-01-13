@@ -1,7 +1,10 @@
-#include <SoftwareSerial.h>// import the serial library
+#include <AltSoftSerial.h>
+AltSoftSerial swSerial;
 
-SoftwareSerial swSerial(10, 11); // RX, TX 
+//#include <SoftwareSerial.h>// import the serial library
+//SoftwareSerial swSerial(10, 11); // RX, TX 
 
+static const int NUM_OF_PACKETS_TO_SEND = 100;
 
 static const int INPUT_BUFFER_LENGTH = 100;
 static const int MESSAGE_BUFFER_LENGTH = 150;
@@ -125,7 +128,7 @@ void loop (){
     }
   }
   else if (currState == STATE_SEND_PACKETS) {   
-    if (packetsSent < 100) {   
+    if (packetsSent < NUM_OF_PACKETS_TO_SEND) {   
       randNum = random(1,10000);
       // Create the packet
       stringBuffer[0] = '\0';
@@ -142,11 +145,12 @@ void loop (){
     // TODO 
     // Create the packet
     stringBuffer[0] = '\0';
-    sprintf(stringBuffer, "Z@%i\n", packetsSent-1);
+    sprintf(stringBuffer, "Z@%i\n", packetsSent);
     // Output for debug
     Serial.write(stringBuffer);
     swSerial.write(stringBuffer);
     currState = STATE_IDLE;
+    packetsSent = 0;
     Serial.write("Current state: STATE_IDLE (protocol completed)\n");
     
   }

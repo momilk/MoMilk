@@ -852,7 +852,7 @@ public class Main extends FragmentActivity implements
             connectToDefaultDevice();
         } else {
 
-            String dateTime =  new SimpleDateFormat("dd-MM-yyyy_HH-mm", Locale.getDefault()).format(new Date());
+            String dateTime =  new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.getDefault()).format(new Date());
             String motherName =
                     getSharedPreferences(Constants.PREFERENCE_FILE, FragmentActivity.MODE_PRIVATE).
                     getString("preference_mother_name", "noname");

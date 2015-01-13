@@ -83,15 +83,23 @@ public class BluetoothService {
     public synchronized void connect(BluetoothDevice device, boolean secure) {
         Log.d(LOG_TAG, "connect to: " + device.getName());
 
-        mAdapter.cancelDiscovery();
-
         // Cancel any thread attempting to make a connection
         if (mState == STATE_CONNECTING) {
             if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
         }
 
-        // Cancel any thread currently running a connection
-        if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
+        // Cancel any thread currently running a connection if it is either disconnected or
+        // connected to another device.
+        if (mConnectedThread != null) {
+            if (!mConnectedThread.mmSocket.isConnected() ||
+                    !mConnectedThread.mmSocket.getRemoteDevice().getAddress().equals(device.getAddress())) {
+                mConnectedThread.cancel(); mConnectedThread = null;
+            } else {
+                Log.d(LOG_TAG, "connect request aborted because the required device is already connected");
+                return;
+            }
+        }
+
 
         // Start the thread to connect with the given device
         mConnectThread = new ConnectThread(device, secure);
