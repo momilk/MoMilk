@@ -156,26 +156,28 @@ public class CaptureBreathingThread extends Thread {
                         Matcher ackMatcher = ACK_PATTERN.matcher(incomingMsg);
                         if (dataMatcher.find()) {
                             parseAndWriteDataPacket(dataMatcher);
-                        }
-                        else if (ackMatcher.find()) {
-                            if (Integer.valueOf(ackMatcher.group(1)) == mNumOfPacketsWritten ) {
-                                Log.d(LOG_TAG, "all of " + mNumOfPacketsWritten +
-                                        " packets were sucessfully written to the file");
-                                writeLineToFile("all of " + mNumOfPacketsWritten +
-                                        " packets were sucessfully written to the file");
-                            } else {
-                                Log.e(LOG_TAG, "only " + mNumOfPacketsWritten +
-                                        " packets (out of " + ackMatcher.group(1) +")" +
-                                        "were sucessfully written to the file");
-                                writeLineToFile( "only " + mNumOfPacketsWritten +
-                                        " packets (out of " + ackMatcher.group(1) +")" +
-                                        "were sucessfully written to the file");
+                        } else {
+                            if (ackMatcher.find()) {
+                                if (Integer.valueOf(ackMatcher.group(1)) == mNumOfPacketsWritten ) {
+                                    Log.d(LOG_TAG, "all of " + mNumOfPacketsWritten +
+                                            " packets were sucessfully written to the file");
+                                    writeLineToFile("all of " + mNumOfPacketsWritten +
+                                            " packets were sucessfully written to the file");
+                                } else {
+                                    Log.e(LOG_TAG, "only " + mNumOfPacketsWritten +
+                                            " packets (out of " + ackMatcher.group(1) +")" +
+                                            "were sucessfully written to the file");
+                                    writeLineToFile( "only " + mNumOfPacketsWritten +
+                                            " packets (out of " + ackMatcher.group(1) +")" +
+                                            "were sucessfully written to the file");
+                                }
+                                setThreadState(ThreadState.DONE);
                             }
-                            setThreadState(ThreadState.DONE);
-                        }
-                        else {
-                            Log.d(LOG_TAG, "Received unrecognized packet while in WAIT_FOR_ACK " +
-                                    "state" + incomingMsg);
+                            else {
+                                Log.d(LOG_TAG, "Received unrecognized packet while in WAIT_FOR_ACK " +
+                                        "state" + incomingMsg);
+                            }
+                            showToastInActivity(incomingMsg);
                         }
                     }
                     break;
