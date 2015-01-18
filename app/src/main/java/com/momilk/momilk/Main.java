@@ -60,10 +60,6 @@ public class Main extends FragmentActivity implements
 
     private static final String LOG_TAG = "MainActivity";
 
-    // This static context will be used in a static methods of this class
-    private static Context context = null;
-
-
     private BluetoothAdapter mBluetoothAdapter;
 
     private BluetoothService mBluetoothService;
@@ -183,11 +179,6 @@ public class Main extends FragmentActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Initializing static context
-        if (Main.context == null) {
-            Main.context = getApplicationContext();
-        }
 
         // Setup TabHost
         initializeTabHost(savedInstanceState);
@@ -998,14 +989,14 @@ public class Main extends FragmentActivity implements
 
     }
 
-    public static void debugToast(String message, boolean increaseDuration) {
+    private void debugToast(String message, boolean increaseDuration) {
         if (ENABLE_DEBUG) {
-            final Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
+            final Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
             toast.show();
 
             // Just dirty workaround to show a longer toast
             if (increaseDuration) {
-                new CountDownTimer(3000, 1000) {
+                new CountDownTimer(2000, 1000) {
                     public void onTick(long millisUntilFinished) {
                         toast.show();
                     }
