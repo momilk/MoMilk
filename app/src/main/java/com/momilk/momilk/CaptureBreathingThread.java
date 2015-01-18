@@ -27,6 +27,7 @@ public class CaptureBreathingThread extends Thread {
 
     private static final String START_SESSION_SYMBOL = "B";
     private static final String END_SESSION_SYMBOL = "B";
+    private static final String TIMEOUT_SYMBOL = "E";
 
     private static final Pattern ACK_PATTERN = Pattern.compile("^Z@(\\d+)$");
     private static final Pattern DATA_PATTERN =
@@ -146,6 +147,7 @@ public class CaptureBreathingThread extends Thread {
 
                 case WAIT_FOR_ACK:
                     if (System.currentTimeMillis() > mWaitForAckStarted + 1000*Constants.BREATHING_WAIT_FOR_ACK_TIMEOUT_SEC) {
+                        sendMessage(TIMEOUT_SYMBOL);
                         showToastInActivity("Breathing session aborted: timeout");
                         cancel();
                         break;
@@ -168,6 +170,9 @@ public class CaptureBreathingThread extends Thread {
                                             " packets (out of " + ackMatcher.group(1) +")" +
                                             "were sucessfully written to the file");
                                     writeLineToFile( "only " + mNumOfPacketsWritten +
+                                            " packets (out of " + ackMatcher.group(1) +")" +
+                                            "were sucessfully written to the file");
+                                    showToastInActivity("only " + mNumOfPacketsWritten +
                                             " packets (out of " + ackMatcher.group(1) +")" +
                                             "were sucessfully written to the file");
                                 }
@@ -202,7 +207,7 @@ public class CaptureBreathingThread extends Thread {
                         } else {
                             MediaScannerConnection.scanFile(mContext,
                                     new String[] { mFile.getPath() }, null, null);
-                            showToastInActivity("Breathing session completed successfully");
+                            showToastInActivity("New file has been created");
                         }
                     }
                     return;
