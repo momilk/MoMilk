@@ -106,6 +106,12 @@ void loop (){
           Serial.write("ERROR: received 'B' message while not in STATE_WAIT_FOR_SESSION_START or STATE _SEND_PACKETS\n");  
         }
       }
+      else if (*tokens[0] == 'E') {
+          Serial.write("Android app signaled timeout!\n");
+          packetsSent = 0;
+          currState = STATE_IDLE;
+          Serial.write("Current state: STATE_IDLE\n");
+      }
       else {
         stringBuffer[0] = '\0';
         sprintf(stringBuffer, "ERROR: received unexpected message!\nState index: %d\nMessage: %s\n",
