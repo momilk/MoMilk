@@ -26,7 +26,9 @@ public class CaptureBreathingThread extends Thread {
     private static final String DATE_SYNC_MESSAGE_FORMAT = "'T@'HH'@'mm'@'ss'@'dd'@'MM'@'yyyy";
 
     private static final String START_SESSION_SYMBOL = "B";
-    private static final String END_SESSION_SYMBOL = "B";
+    private static final String STATUS_REQUEST_SYMBOL = "exit?";
+    private static final String STATUS_CONTINUE_SYMBOL = "n";
+    private static final String STATUS_FINISH_SYMBOL = "y";
     private static final String TIMEOUT_SYMBOL = "E";
 
     private static final Pattern ACK_PATTERN = Pattern.compile("^Z@(\\d+)$");
@@ -34,8 +36,8 @@ public class CaptureBreathingThread extends Thread {
             Pattern.compile("^([.\\d]+)@(-?[.\\d]+)@(-?[.\\d]+)@(-?[.\\d]+)$");
 
     private enum ThreadState {
-        SYNC_DATE, START_BREATHING_SESSION, RECEIVE_PACKETS,
-        WAIT_FOR_ACK, SESSION_SUCCESSFULL, SESSION_UNSUCCESSFULL, DONE
+        SEND_DATE, SEND_START_BREATHING_SESSION, RECEIVE_PACKETS, SEND_STATUS,
+        RECEIVE_ACK, SESSION_SUCCESSFULL, SESSION_UNSUCCESSFULL, DONE
     }
 
 
@@ -55,7 +57,7 @@ public class CaptureBreathingThread extends Thread {
     private BufferedWriter mWriter;
 
     private int mNumOfPacketsWritten;
-    private long mWaitForAckStarted;
+    private long mReceiveAckStarted;
 
 
 
@@ -67,7 +69,7 @@ public class CaptureBreathingThread extends Thread {
         mBluetoothService = bluetoothService;
         mInputBuffer = new ConcurrentLinkedQueue<String>();
 
-        mThreadState = ThreadState.SYNC_DATE;
+        mThreadState = ThreadState.SEND_DATE;
         mCancelled = false;
         mDone = false;
 
@@ -98,8 +100,7 @@ public class CaptureBreathingThread extends Thread {
 
             switch(getThreadState()) {
 
-                case SYNC_DATE:
-
+                case SEND_DATE:
                     if (isDone()) {
                         showToastInActivity("Breathing aborted!");
                         setThreadState(ThreadState.DONE);
@@ -107,36 +108,24 @@ public class CaptureBreathingThread extends Thread {
                     }
                     else {
                         sendMessage(composeDateSyncMessage());
-                        setThreadState(ThreadState.START_BREATHING_SESSION);
+                        setThreadState(ThreadState.SEND_START_BREATHING_SESSION);
                     }
                     break;
 
-                case START_BREATHING_SESSION:
-
-                    if (isDone()) {
-                        showToastInActivity("Breathing aborted!");
-                        setThreadState(ThreadState.DONE);
-                        break;
-                    }
-                    else {
-                        openFileForWrite();
-                        writeLineToFile("Time , Weight, Roll, Tilt");
-                        sendMessage(START_SESSION_SYMBOL);
-                        setThreadState(ThreadState.RECEIVE_PACKETS);
-                    }
+                case SEND_START_BREATHING_SESSION:
+                    openFileForWrite();
+                    writeLineToFile("Time , Weight, Roll, Tilt");
+                    sendMessage(START_SESSION_SYMBOL);
+                    setThreadState(ThreadState.RECEIVE_PACKETS);
                     break;
 
                 case RECEIVE_PACKETS:
-
-                    if (isDone()) {
-                        sendMessage(END_SESSION_SYMBOL);
-                        mWaitForAckStarted = System.currentTimeMillis();
-                        setThreadState(ThreadState.WAIT_FOR_ACK);
-                        break;
-                    }
-                    else if (incomingMsg != null) {
+                    if (incomingMsg != null) {
                         Matcher dataMatcher = DATA_PATTERN.matcher(incomingMsg);
-                        if (dataMatcher.find()) {
+
+                        if (incomingMsg.equals(STATUS_REQUEST_SYMBOL)) {
+                            setThreadState(ThreadState.SEND_STATUS);
+                        } else if (dataMatcher.find()) {
                             parseAndWriteDataPacket(dataMatcher);
                         } else {
                             Log.d(LOG_TAG, "Received unrecognized packet while in RECEIVE_PACKETS " +
@@ -145,8 +134,19 @@ public class CaptureBreathingThread extends Thread {
                     }
                     break;
 
-                case WAIT_FOR_ACK:
-                    if (System.currentTimeMillis() > mWaitForAckStarted + 1000*Constants.BREATHING_WAIT_FOR_ACK_TIMEOUT_SEC) {
+                case SEND_STATUS:
+                    if (isDone()) {
+                        sendMessage(STATUS_FINISH_SYMBOL);
+                        mReceiveAckStarted = System.currentTimeMillis();
+                        setThreadState(ThreadState.RECEIVE_ACK);
+                    } else {
+                        sendMessage(STATUS_CONTINUE_SYMBOL);
+                        setThreadState(ThreadState.RECEIVE_PACKETS);
+                    }
+                    break;
+
+                case RECEIVE_ACK:
+                    if (System.currentTimeMillis() > mReceiveAckStarted + 1000*Constants.BREATHING_WAIT_FOR_ACK_TIMEOUT_SEC) {
                         sendMessage(TIMEOUT_SYMBOL);
                         showToastInActivity("Breathing session aborted: timeout");
                         cancel();
@@ -179,10 +179,9 @@ public class CaptureBreathingThread extends Thread {
                                 setThreadState(ThreadState.DONE);
                             }
                             else {
-                                Log.d(LOG_TAG, "Received unrecognized packet while in WAIT_FOR_ACK " +
+                                Log.d(LOG_TAG, "Received unrecognized packet while in RECEIVE_ACK " +
                                         "state" + incomingMsg);
                             }
-                            showToastInActivity(incomingMsg);
                         }
                     }
                     break;

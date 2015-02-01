@@ -74,7 +74,6 @@ public class Main extends FragmentActivity implements
     private HashMap<String, TabInfo> mMapTabInfo = new HashMap<String, TabInfo>();
     private TabInfo mCurrentTabInfo;
 
-    private String mConnectedDeviceName;
 
     private CustomDatabaseAdapter mDBAdapter;
 
@@ -123,9 +122,7 @@ public class Main extends FragmentActivity implements
                     }
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
-                    // save the connected device's name
-                    mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
-                    debugToast("Connected to " + mConnectedDeviceName, false);
+                    // String deviceName = msg.getData().getString(Constants.DEVICE_NAME);
                     break;
                 case Constants.MESSAGE_TOAST:
                     final Toast toast = Toast.makeText(getApplicationContext(), msg.getData().getString(Constants.TOAST),
@@ -390,7 +387,7 @@ public class Main extends FragmentActivity implements
     This metod clears the tabs host from all the tabs and then adds the tabs specified in
     input array
      */
-    private void setTabsByGroup(String[] tabsGroup, Bundle args) {
+    private void setTabsByGroup(String[] tabsGroup) {
 
 
         if (mCurrentTabsGroup != null && mCurrentTabsGroup == tabsGroup) {
@@ -475,7 +472,7 @@ public class Main extends FragmentActivity implements
                 @Override
                 public boolean onTouch(View view, MotionEvent event) {
                     if (event.getAction() == MotionEvent.ACTION_UP) {
-                        TabInfo newTabInfo = (TabInfo) mMapTabInfo.get((String) view.getTag());
+                        @SuppressWarnings("SuspiciousMethodCalls") TabInfo newTabInfo = mMapTabInfo.get(view.getTag());
                         Log.d(LOG_TAG, "currentTabTag: " + mCurrentTabInfo.mTag +
                                 " newTabTag: " + newTabInfo.mTag);
                         if (mCurrentTabInfo == newTabInfo) {
@@ -494,11 +491,11 @@ public class Main extends FragmentActivity implements
     /**
      * This callback contains tab changing logic. Please note that this callback is not expected to
      * handle clicks on already selected tabs.
-     * @param tag
+     * @param tag tag of the tab
      */
     @Override
     public void onTabChanged(String tag) {
-        TabInfo newTabInfo = (TabInfo) mMapTabInfo.get(tag);
+        TabInfo newTabInfo = mMapTabInfo.get(tag);
 
         // When the user clicks on HISTORY tab, he is automatically redirected to HISTORY_LIST tab
         if (newTabInfo.mTag.equals(Constants.HISTORY_TAB_TAG)) {
@@ -534,7 +531,7 @@ public class Main extends FragmentActivity implements
             }
 
             // Show the chosen tabs
-            setTabsByGroup(tabsGroup, null);
+            setTabsByGroup(tabsGroup);
 
             // Highlight the current tab
             refreshTabBackgrounds();
@@ -588,50 +585,11 @@ public class Main extends FragmentActivity implements
     //
     // -------------------------------------------------------------------------------------------
 
-
-    /**
-     * This method sends a message over bluetooth channel if there is a connected device. Newline
-     * char is appended at the end in order to allow processing messages in a line-by-line
-     * manner
-     * @param message
-     */
-    public void sendMessage(String message) {
-        if (mBluetoothService == null) {
-            setupBluetoothService();
-        }
-        // Check that we're actually connected before trying anything
-        if (mBluetoothService.getState() != BluetoothService.STATE_CONNECTED) {
-            Toast.makeText(this, "Not connected to any device", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        // Check that there's actually something to send
-        if (message.length() > 0) {
-            // Get the message bytes and tell the BluetoothService to write
-            // Adding newline char in order to be able to parse messages as lines
-            mBluetoothService.write(message + "\n");
-        }
-    }
-
-
-
-
     private void setupBluetoothService() {
         // Initialize the BluetoothService to perform bluetooth connections
         mBluetoothService = new BluetoothService(this, mHandler);
 
     }
-
-
-
-    private void ensureDiscoverable() {
-        if (mBluetoothAdapter.getScanMode() !=
-                BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-            startActivity(discoverableIntent);
-        }
-    }
-
 
     public void discoverBluetoothDevices() {
 
@@ -771,7 +729,7 @@ public class Main extends FragmentActivity implements
                         SharedPreferences.Editor editor = sharedPref.edit();
                         editor.putString("preference_default_device_name", device.getName());
                         editor.putString("preference_default_device_address", device.getAddress());
-                        editor.commit();
+                        editor.apply();
                         // Show the default settings fragment after device has been chosen
                         getFragment(SettingsFragment.class);
                         break;
@@ -914,7 +872,7 @@ public class Main extends FragmentActivity implements
     // -------------------------------------------------------------------------------------------
 
 
-    private Fragment getFragment(Class fragmentClass) {
+    private Fragment getFragment(Class<? extends Fragment> fragmentClass) {
 
         // Get the tab in which this fragment should be shown
         String tabTag = Constants.FRAGMENT_TO_TAB_MAP.get(fragmentClass);
